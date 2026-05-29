@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { childrenApi, booksApi, analysisApi } from "@/lib/api";
 import type { Child, ReadingRecord, ReadingAnalysis, RecommendedBook } from "@/lib/api";
@@ -9,8 +9,8 @@ import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tool
 
 type Tab = "books" | "analysis" | "recommend";
 
-export default function Dashboard({ params }: { params: Promise<{ childId: string }> }) {
-  const { childId } = use(params);
+export default function Dashboard({ params }: { params: { childId: string } }) {
+  const { childId } = params;
   const id = Number(childId);
 
   const [child, setChild] = useState<Child | null>(null);
