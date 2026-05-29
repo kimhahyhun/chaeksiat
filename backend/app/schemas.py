@@ -8,6 +8,12 @@ class ChildCreate(BaseModel):
     avatar: str = "bear"
 
 
+class ChildUpdate(BaseModel):
+    name: str | None = Field(None, min_length=1, max_length=50)
+    birth_year: int | None = Field(None, ge=2000, le=2025)
+    avatar: str | None = None
+
+
 class ChildResponse(BaseModel):
     id: int
     name: str
