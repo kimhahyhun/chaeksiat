@@ -53,6 +53,18 @@ export default function Home() {
     }
   }
 
+  async function handleDelete() {
+    if (!editTarget) return;
+    if (!confirm(`${editTarget.name}의 프로필을 삭제할까요?\n독서 기록도 모두 삭제됩니다.`)) return;
+    try {
+      await childrenApi.delete(editTarget.id);
+      setChildren((prev) => prev.filter((c) => c.id !== editTarget.id));
+      closeModal();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "삭제 중 오류가 발생했어요");
+    }
+  }
+
   async function handleEdit(e: React.FormEvent) {
     e.preventDefault();
     if (!editTarget) return;
@@ -110,7 +122,16 @@ export default function Home() {
         {editTarget && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
             <div className="bg-white rounded-3xl p-8 w-full max-w-sm shadow-xl">
-              <h3 className="text-2xl font-black text-gray-800 mb-1">프로필 수정</h3>
+              <div className="flex items-start justify-between mb-1">
+                <h3 className="text-2xl font-black text-gray-800">프로필 수정</h3>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="text-sm text-red-400 hover:text-red-600 font-semibold px-3 py-1 rounded-xl hover:bg-red-50 transition-colors"
+                >
+                  삭제
+                </button>
+              </div>
               <Link
                 href={`/dashboard/${editTarget.id}`}
                 className="inline-block text-sm text-seed-600 font-semibold mb-5 hover:underline"
