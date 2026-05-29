@@ -69,6 +69,8 @@ export const childrenApi = {
   create: (data: { name: string; birth_year: number; avatar: string }) =>
     req<Child>("/children", { method: "POST", body: JSON.stringify(data) }),
   get: (id: number) => req<Child>(`/children/${id}`),
+  update: (id: number, data: Partial<{ name: string; birth_year: number; avatar: string }>) =>
+    req<Child>(`/children/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   delete: (id: number) => req<void>(`/children/${id}`, { method: "DELETE" }),
 };
 

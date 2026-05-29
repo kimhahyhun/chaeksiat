@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
 from app.models import Child
-from app.schemas import ChildCreate, ChildResponse
+from app.schemas import ChildCreate, ChildUpdate, ChildResponse
 
 router = APIRouter(prefix="/children", tags=["children"])
 
@@ -28,6 +28,18 @@ async def get_child(child_id: int, db: AsyncSession = Depends(get_db)):
     child = await db.get(Child, child_id)
     if not child:
         raise HTTPException(status_code=404, detail="아이 프로필을 찾을 수 없어요")
+    return child
+
+
+@router.patch("/{child_id}", response_model=ChildResponse)
+async def update_child(child_id: int, body: ChildUpdate, db: AsyncSession = Depends(get_db)):
+    child = await db.get(Child, child_id)
+    if not child:
+        raise HTTPException(status_code=404, detail="아이 프로필을 찾을 수 없어요")
+    for field, value in body.model_dump(exclude_none=True).items():
+        setattr(child, field, value)
+    await db.commit()
+    await db.refresh(child)
     return child
 
 
