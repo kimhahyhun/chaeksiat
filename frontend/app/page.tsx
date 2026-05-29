@@ -97,15 +97,23 @@ export default function Home() {
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             {children.map((child) => (
-              <button
-                key={child.id}
-                onClick={() => openEdit(child)}
-                className="bg-white rounded-3xl p-6 shadow-sm hover:shadow-md transition-all hover:scale-105 text-center border-2 border-seed-100 w-full"
-              >
-                <div className="text-5xl mb-3">{AVATARS[child.avatar] ?? "👶"}</div>
-                <div className="font-bold text-gray-800 text-lg">{child.name}</div>
-                <div className="text-sm text-gray-500 mt-1">{getAge(child.birth_year)}살</div>
-              </button>
+              <div key={child.id} className="relative">
+                <Link
+                  href={`/dashboard/${child.id}`}
+                  className="block bg-white rounded-3xl p-6 shadow-sm hover:shadow-md transition-all hover:scale-105 text-center border-2 border-seed-100"
+                >
+                  <div className="text-5xl mb-3">{AVATARS[child.avatar] ?? "👶"}</div>
+                  <div className="font-bold text-gray-800 text-lg">{child.name}</div>
+                  <div className="text-sm text-gray-500 mt-1">{getAge(child.birth_year)}살</div>
+                </Link>
+                <button
+                  onClick={(e) => { e.preventDefault(); openEdit(child); }}
+                  className="absolute top-2 right-2 w-8 h-8 bg-white rounded-full shadow text-base flex items-center justify-center hover:bg-seed-50 transition-colors"
+                  title="프로필 수정"
+                >
+                  ✏️
+                </button>
+              </div>
             ))}
 
             <button
@@ -122,7 +130,7 @@ export default function Home() {
         {editTarget && (
           <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
             <div className="bg-white rounded-3xl p-8 w-full max-w-sm shadow-xl">
-              <div className="flex items-start justify-between mb-1">
+              <div className="flex items-start justify-between mb-6">
                 <h3 className="text-2xl font-black text-gray-800">프로필 수정</h3>
                 <button
                   type="button"
@@ -132,12 +140,6 @@ export default function Home() {
                   삭제
                 </button>
               </div>
-              <Link
-                href={`/dashboard/${editTarget.id}`}
-                className="inline-block text-sm text-seed-600 font-semibold mb-5 hover:underline"
-              >
-                📖 {editTarget.name}의 책장 보기 →
-              </Link>
               <form onSubmit={handleEdit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-600 mb-1">이름</label>
