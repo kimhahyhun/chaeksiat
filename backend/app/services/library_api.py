@@ -3,6 +3,30 @@ from app.config import settings
 
 BASE_URL = "http://data4library.kr/api"
 
+# 연령 그룹 매핑
+def get_age_group(age: int) -> dict:
+    if age <= 7:
+        return {"label": "영유아", "api_age": 6}
+    elif age <= 10:
+        return {"label": "초등저학년", "api_age": 8}
+    elif age <= 13:
+        return {"label": "초등고학년", "api_age": 11}
+    elif age <= 16:
+        return {"label": "중학생", "api_age": 14}
+    else:
+        return {"label": "고등학생", "api_age": 17}
+
+# 성인 전용 KDC 분류명 키워드 (아동/청소년에게 부적합)
+ADULT_CLASS_KEYWORDS = [
+    "성인", "의학", "법학", "경제학", "경영학", "회계", "행정",
+    "군사", "노동", "보험", "세무", "부동산",
+]
+
+def is_age_appropriate(class_nm: str | None) -> bool:
+    if not class_nm:
+        return True
+    return not any(kw in class_nm for kw in ADULT_CLASS_KEYWORDS)
+
 # KDC 주요 분류 (첫 자리 기준)
 KDC_CATEGORIES = {
     "0": "총류",
@@ -45,12 +69,13 @@ async def fetch_book_detail(isbn13: str) -> dict | None:
 
 
 async def fetch_popular_books(age: int, page_no: int = 1, page_size: int = 20) -> list[dict]:
-    """도서관 정보나루 인기 대출 도서 (아동 분야)"""
+    """도서관 정보나루 인기 대출 도서 — 연령 그룹 기반"""
+    group = get_age_group(age)
     params = {
         "authKey": settings.library_api_key,
         "startDt": "2024-01-01",
         "endDt": "2024-12-31",
-        "age": age,
+        "age": group["api_age"],
         "pageNo": page_no,
         "pageSize": page_size,
         "format": "json",
@@ -77,7 +102,7 @@ async def fetch_popular_books(age: int, page_no: int = 1, page_size: int = 20) -
             return []
 
 
-async def fetch_recommend_list(isbn13: str, max_count: int = 5) -> list[dict]:
+async def fetch_recommend_list(isbn13: str, max_count: int = 10, age: int = 10) -> list[dict]:
     """연관 도서 추천 (다독자를 위한 추천도서 API)"""
     params = {
         "authKey": settings.library_api_key,
@@ -102,6 +127,7 @@ async def fetch_recommend_list(isbn13: str, max_count: int = 5) -> list[dict]:
                 }
                 for d in docs
                 if d["doc"].get("isbn13")
+                and is_age_appropriate(d["doc"].get("class_nm"))
             ]
         except Exception:
             return []

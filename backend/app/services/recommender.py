@@ -89,7 +89,7 @@ async def get_recommendations(records: list, birth_year: int) -> list[Recommende
     # 2. 가장 좋아하는 분야 연관 추천
     if records:
         recent_isbn = records[-1].isbn13
-        related = await fetch_recommend_list(recent_isbn, max_count=10)
+        related = await fetch_recommend_list(recent_isbn, max_count=10, age=age)
         fav_cat = dist.most_common(1)[0][0] if dist else None
         for book in related:
             if book["isbn13"] in seen_isbns:
