@@ -3,18 +3,14 @@ from app.config import settings
 
 BASE_URL = "http://data4library.kr/api"
 
-# 연령 그룹 매핑
+# 연령 그룹 매핑 (영유아~초등학생만 지원)
 def get_age_group(age: int) -> dict:
     if age <= 7:
         return {"label": "영유아", "api_age": 6}
     elif age <= 10:
-        return {"label": "초등저학년", "api_age": 8}
-    elif age <= 13:
-        return {"label": "초등고학년", "api_age": 11}
-    elif age <= 16:
-        return {"label": "중학생", "api_age": 14}
+        return {"label": "초등 저학년", "api_age": 8}
     else:
-        return {"label": "고등학생", "api_age": 17}
+        return {"label": "초등 고학년", "api_age": 11}
 
 # 성인 전용 KDC 분류명 키워드 (아동/청소년에게 부적합)
 ADULT_CLASS_KEYWORDS = [

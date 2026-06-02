@@ -168,6 +168,12 @@ export default function ChildDashboard({ params }: { params: { childId: string }
   const points = totalBooks * 10;
   const tier = TIER_INFO[level] ?? TIER_INFO["씨앗"];
 
+  const childAge = new Date().getFullYear() - child.birth_year;
+  const ageGroupLabel =
+    childAge <= 7 ? "영유아" :
+    childAge <= 10 ? "초등 저학년" :
+    "초등 고학년";
+
   // 현재 레벨에서 열매 몇 개인지
   const fruitsOnTree = Math.min(totalBooks % FRUITS_PER_LEVEL || (totalBooks > 0 ? FRUITS_PER_LEVEL : 0), FRUIT_POSITIONS.length);
   const progressToNext = ((totalBooks % FRUITS_PER_LEVEL) / FRUITS_PER_LEVEL) * 100;
@@ -295,7 +301,7 @@ export default function ChildDashboard({ params }: { params: { childId: string }
         {popularBooks.length > 0 && (
           <div className="bg-white rounded-3xl shadow-lg p-5">
             <h3 className="text-lg font-black text-gray-800 mb-1">🔥 현재 가장 인기 있는 도서</h3>
-            <p className="text-sm text-gray-400 mb-4">지금 도서관에서 제일 많이 빌리는 책이에요!</p>
+            <p className="text-sm text-gray-400 mb-4">지금 {ageGroupLabel}이 도서관에서 제일 많이 빌리는 책이에요!</p>
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
               {popularBooks.slice(0, 10).map((book, i) => (
                 <div
