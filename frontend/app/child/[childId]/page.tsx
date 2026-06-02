@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { childrenApi, booksApi, analysisApi } from "@/lib/api";
-import type { Child, ReadingAnalysis } from "@/lib/api";
-import { AVATARS, LEVEL_TREE } from "@/lib/utils";
+import type { Child, ReadingAnalysis, ReadingRecord } from "@/lib/api";
+import { AVATARS, LEVEL_TREE, KDC_COLORS } from "@/lib/utils";
 
 // 책 수에 따른 열매 위치 (나무 위에 자연스럽게 배치)
 const FRUIT_POSITIONS = [
@@ -25,7 +25,38 @@ const FRUIT_POSITIONS = [
   { top: "26%", left: "70%" },
 ];
 
-const FRUITS_PER_LEVEL = 5; // 열매 5개마다 레벨업
+const FRUITS_PER_LEVEL = 5;
+
+// 분야별 단계 기준 (읽은 권수)
+const FIELD_LEVELS = [
+  { min: 0,  label: "씨앗",   emoji: "🌰" },
+  { min: 3,  label: "새싹",   emoji: "🌱" },
+  { min: 7,  label: "줄기",   emoji: "🪴" },
+  { min: 12, label: "가지",   emoji: "🌿" },
+  { min: 20, label: "잎사귀", emoji: "🍃" },
+  { min: 30, label: "열매",   emoji: "🌸" },
+];
+
+function getFieldLevel(count: number) {
+  let result = FIELD_LEVELS[0];
+  for (const lvl of FIELD_LEVELS) {
+    if (count >= lvl.min) result = lvl;
+  }
+  const nextIdx = FIELD_LEVELS.indexOf(result) + 1;
+  const next = FIELD_LEVELS[nextIdx];
+  return { ...result, toNext: next ? next.min - count : 0, isMax: !next };
+}
+
+// 전체 배지 목록
+const ALL_BADGES = [
+  { name: "문학왕",    emoji: "📚", desc: "문학 5권 이상" },
+  { name: "과학탐험가", emoji: "🔬", desc: "자연과학 3권 이상" },
+  { name: "사회박사",  emoji: "🌍", desc: "사회과학 3권 이상" },
+  { name: "예술가",    emoji: "🎨", desc: "예술 3권 이상" },
+  { name: "역사학자",  emoji: "🏛️", desc: "역사·지리 3권 이상" },
+  { name: "만독왕",    emoji: "👑", desc: "총 20권 이상" },
+  { name: "균형독서가", emoji: "⚖️", desc: "5개 분야 이상 2권씩" },
+];
 
 const TIER_INFO: Record<string, { name: string; color: string; bg: string }> = {
   "씨앗":    { name: "새싹 독서가",    color: "#86efac", bg: "#f0fdf4" },
@@ -43,6 +74,7 @@ export default function ChildDashboard({ params }: { params: { childId: string }
 
   const [child, setChild] = useState<Child | null>(null);
   const [analysis, setAnalysis] = useState<ReadingAnalysis | null>(null);
+  const [records, setRecords] = useState<ReadingRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -50,8 +82,9 @@ export default function ChildDashboard({ params }: { params: { childId: string }
       childrenApi.get(id),
       booksApi.listRecords(id),
       analysisApi.analyze(id),
-    ]).then(([c, , a]) => {
+    ]).then(([c, r, a]) => {
       setChild(c);
+      setRecords(r);
       setAnalysis(a);
     }).finally(() => setLoading(false));
   }, [id]);
@@ -196,6 +229,148 @@ export default function ChildDashboard({ params }: { params: { childId: string }
             </div>
           </div>
         </div>
+
+        {/* ── 나의 독서 밭 ── */}
+        <div className="bg-white rounded-3xl shadow-lg p-5">
+          <h3 className="text-lg font-black text-gray-800 mb-1">🌾 나의 독서 밭</h3>
+          <p className="text-sm text-gray-400 mb-4">분야별로 책을 읽으면 밭이 자라요!</p>
+          {analysis && Object.keys(analysis.category_distribution).length > 0 ? (
+            <div className="grid grid-cols-2 gap-3">
+              {Object.entries(analysis.category_distribution)
+                .sort(([, a], [, b]) => b - a)
+                .map(([cat, count]) => {
+                  const lv = getFieldLevel(count);
+                  return (
+                    <div
+                      key={cat}
+                      className="rounded-2xl p-3 border-2"
+                      style={{ borderColor: KDC_COLORS[cat] + "44", background: KDC_COLORS[cat] + "11" }}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-bold" style={{ color: KDC_COLORS[cat] }}>{cat}</span>
+                        <span className="text-lg">{lv.emoji}</span>
+                      </div>
+                      <div className="text-xl font-black text-gray-800">{count}권</div>
+                      <div className="text-xs text-gray-500 mt-0.5">{lv.label} 단계</div>
+                      {!lv.isMax && (
+                        <div className="mt-2 w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              width: `${(count / (count + lv.toNext)) * 100}%`,
+                              background: KDC_COLORS[cat],
+                            }}
+                          />
+                        </div>
+                      )}
+                      {!lv.isMax && (
+                        <div className="text-xs text-gray-400 mt-1">{lv.toNext}권 더 읽으면 성장!</div>
+                      )}
+                    </div>
+                  );
+                })}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-300">
+              <div className="text-4xl mb-2">🌾</div>
+              <p className="text-sm">책을 읽으면 밭이 생겨요!</p>
+            </div>
+          )}
+        </div>
+
+        {/* ── 배지 컬렉션 ── */}
+        <div className="bg-white rounded-3xl shadow-lg p-5">
+          <h3 className="text-lg font-black text-gray-800 mb-1">🏅 배지 컬렉션</h3>
+          <p className="text-sm text-gray-400 mb-4">조건을 달성하면 배지를 획득해요!</p>
+          <div className="grid grid-cols-4 gap-3">
+            {ALL_BADGES.map((badge) => {
+              const earned = analysis?.badges.includes(badge.name) ?? false;
+              return (
+                <div key={badge.name} className="text-center">
+                  <div
+                    className={`w-14 h-14 mx-auto rounded-2xl flex items-center justify-center text-2xl mb-1 ${
+                      earned
+                        ? "bg-amber-50 border-2 border-amber-300 shadow"
+                        : "bg-gray-100 grayscale opacity-40"
+                    }`}
+                  >
+                    {badge.emoji}
+                  </div>
+                  <div className={`text-xs font-bold ${earned ? "text-amber-600" : "text-gray-400"}`}>
+                    {badge.name}
+                  </div>
+                  {!earned && (
+                    <div className="text-xs text-gray-300 mt-0.5 leading-tight">{badge.desc}</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── 출석 도장판 ── */}
+        {(() => {
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = now.getMonth();
+          const daysInMonth = new Date(year, month + 1, 0).getDate();
+          const readDates = new Set(records.map((r) => r.read_at.slice(0, 10)));
+
+          // 연속 streak 계산
+          let streak = 0;
+          for (let i = 0; i < 30; i++) {
+            const d = new Date(now);
+            d.setDate(now.getDate() - i);
+            const key = d.toISOString().slice(0, 10);
+            if (readDates.has(key)) streak++;
+            else if (i > 0) break;
+          }
+
+          return (
+            <div className="bg-white rounded-3xl shadow-lg p-5">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-lg font-black text-gray-800">📅 출석 도장판</h3>
+                {streak > 0 && (
+                  <div className="bg-orange-50 border border-orange-200 rounded-xl px-3 py-1 text-sm font-black text-orange-500">
+                    🔥 {streak}일 연속!
+                  </div>
+                )}
+              </div>
+              <p className="text-sm text-gray-400 mb-4">
+                {now.getMonth() + 1}월 · 책 읽은 날에 도장이 찍혀요
+              </p>
+              <div className="grid grid-cols-7 gap-1.5">
+                {["일", "월", "화", "수", "목", "금", "토"].map((d) => (
+                  <div key={d} className="text-center text-xs text-gray-400 font-semibold pb-1">{d}</div>
+                ))}
+                {/* 시작 요일 공백 */}
+                {Array.from({ length: new Date(year, month, 1).getDay() }).map((_, i) => (
+                  <div key={`empty-${i}`} />
+                ))}
+                {Array.from({ length: daysInMonth }).map((_, i) => {
+                  const day = i + 1;
+                  const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+                  const isToday = day === now.getDate();
+                  const hasRead = readDates.has(dateStr);
+                  return (
+                    <div
+                      key={day}
+                      className={`aspect-square rounded-xl flex items-center justify-center text-xs font-bold transition-all ${
+                        hasRead
+                          ? "bg-green-400 text-white shadow-sm"
+                          : isToday
+                          ? "bg-green-50 border-2 border-green-300 text-green-600"
+                          : "bg-gray-50 text-gray-400"
+                      }`}
+                    >
+                      {hasRead ? "📖" : day}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* 책 추가 버튼 */}
         <Link
