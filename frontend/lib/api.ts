@@ -94,4 +94,6 @@ export const analysisApi = {
   analyze: (childId: number) => req<ReadingAnalysis>(`/children/${childId}/analysis`),
   recommend: (childId: number) =>
     req<RecommendedBook[]>(`/children/${childId}/recommendations`),
+  popularBooks: (age: number) =>
+    req<RecommendedBook[]>(`/popular-books?age=${age}`),
 };

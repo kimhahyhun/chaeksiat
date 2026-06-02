@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { childrenApi, booksApi, analysisApi } from "@/lib/api";
-import type { Child, ReadingAnalysis, ReadingRecord } from "@/lib/api";
+import type { Child, ReadingAnalysis, ReadingRecord, RecommendedBook } from "@/lib/api";
 import { AVATARS, LEVEL_TREE, KDC_COLORS } from "@/lib/utils";
 
 // 책 수에 따른 열매 위치 (나무 위에 자연스럽게 배치)
@@ -133,6 +133,7 @@ export default function ChildDashboard({ params }: { params: { childId: string }
   const [child, setChild] = useState<Child | null>(null);
   const [analysis, setAnalysis] = useState<ReadingAnalysis | null>(null);
   const [records, setRecords] = useState<ReadingRecord[]>([]);
+  const [popularBooks, setPopularBooks] = useState<RecommendedBook[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -144,6 +145,8 @@ export default function ChildDashboard({ params }: { params: { childId: string }
       setChild(c);
       setRecords(r);
       setAnalysis(a);
+      const age = Math.min(new Date().getFullYear() - c.birth_year, 19);
+      analysisApi.popularBooks(Math.max(age, 1)).then(setPopularBooks).catch(() => {});
     }).finally(() => setLoading(false));
   }, [id]);
 
@@ -287,6 +290,44 @@ export default function ChildDashboard({ params }: { params: { childId: string }
             </div>
           </div>
         </div>
+
+        {/* ── 현재 가장 인기 있는 도서 ── */}
+        {popularBooks.length > 0 && (
+          <div className="bg-white rounded-3xl shadow-lg p-5">
+            <h3 className="text-lg font-black text-gray-800 mb-1">🔥 현재 가장 인기 있는 도서</h3>
+            <p className="text-sm text-gray-400 mb-4">지금 도서관에서 제일 많이 빌리는 책이에요!</p>
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+              {popularBooks.slice(0, 10).map((book, i) => (
+                <div
+                  key={book.isbn13 || i}
+                  className="flex-shrink-0 w-28"
+                >
+                  {/* 표지 */}
+                  <div className="w-28 h-40 rounded-xl overflow-hidden shadow-md bg-gray-100 mb-2 relative">
+                    {book.cover_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={book.cover_url}
+                        alt={book.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-3xl">📚</div>
+                    )}
+                    {/* 순위 뱃지 */}
+                    <div className={`absolute top-1.5 left-1.5 w-6 h-6 rounded-full flex items-center justify-center text-xs font-black text-white shadow ${
+                      i === 0 ? "bg-amber-400" : i === 1 ? "bg-gray-400" : i === 2 ? "bg-orange-400" : "bg-green-400"
+                    }`}>
+                      {i + 1}
+                    </div>
+                  </div>
+                  <p className="text-xs font-bold text-gray-700 line-clamp-2 leading-tight">{book.title}</p>
+                  <p className="text-xs text-gray-400 mt-0.5 truncate">{book.authors?.split(";")[0]}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── 독서 정글 탐험 ── */}
         {(() => {
