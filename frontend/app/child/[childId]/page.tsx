@@ -116,16 +116,42 @@ const JUNGLE_MISSIONS = [
   },
 ];
 
-const TIER_INFO: Record<string, { name: string; color: string; bg: string }> = {
-  "씨앗":    { name: "새싹 독서가",    color: "#86efac", bg: "#f0fdf4" },
-  "새싹":    { name: "초보 독서가",    color: "#4ade80", bg: "#dcfce7" },
-  "줄기":    { name: "성장 독서가",    color: "#22c55e", bg: "#bbf7d0" },
-  "가지":    { name: "열정 독서가",    color: "#16a34a", bg: "#86efac" },
-  "잎사귀":  { name: "숙련 독서가",    color: "#0284c7", bg: "#e0f2fe" },
-  "꽃":      { name: "고급 독서가",    color: "#7c3aed", bg: "#ede9fe" },
-  "열매":    { name: "플래티넘 독서왕", color: "#d97706", bg: "#fef3c7" },
-  "나무":    { name: "전설의 독서왕",  color: "#dc2626", bg: "#fee2e2" },
-};
+// 롤 티어 시스템
+const LOL_TIERS = [
+  { name: "아이언",     emoji: "🪨", color: "#9ca3af", bg: "#f3f4f6", min: 0,  hasDivision: true  },
+  { name: "브론즈",     emoji: "🥉", color: "#b45309", bg: "#fef3c7", min: 5,  hasDivision: true  },
+  { name: "실버",       emoji: "🥈", color: "#6b7280", bg: "#f9fafb", min: 10, hasDivision: true  },
+  { name: "골드",       emoji: "🥇", color: "#d97706", bg: "#fffbeb", min: 20, hasDivision: true  },
+  { name: "플래티넘",   emoji: "💚", color: "#059669", bg: "#ecfdf5", min: 35, hasDivision: true  },
+  { name: "다이아몬드", emoji: "💎", color: "#0284c7", bg: "#eff6ff", min: 50, hasDivision: true  },
+  { name: "마스터",     emoji: "👑", color: "#7c3aed", bg: "#f5f3ff", min: 70, hasDivision: false },
+  { name: "챌린저",     emoji: "🔥", color: "#dc2626", bg: "#fff1f2", min: 90, hasDivision: false },
+];
+
+function getLolTier(totalBooks: number) {
+  let tier = LOL_TIERS[0];
+  for (const t of LOL_TIERS) {
+    if (totalBooks >= t.min) tier = t;
+  }
+  const tierIdx = LOL_TIERS.indexOf(tier);
+  const nextTier = LOL_TIERS[tierIdx + 1];
+
+  let division = "";
+  if (tier.hasDivision) {
+    const nextMin = nextTier?.min ?? tier.min + 20;
+    const range = nextMin - tier.min;
+    const divSize = Math.floor(range / 4);
+    const progress = totalBooks - tier.min;
+    const divNum = Math.min(Math.floor(progress / divSize), 3);
+    division = ["4", "3", "2", "1"][divNum];
+  }
+
+  const nextMin = nextTier?.min ?? null;
+  const toNext = nextMin !== null ? nextMin - totalBooks : 0;
+  const isMax = !nextTier;
+
+  return { tier, division, toNext, isMax, nextTier };
+}
 
 export default function ChildDashboard({ params }: { params: { childId: string } }) {
   const id = Number(params.childId);
@@ -164,9 +190,8 @@ export default function ChildDashboard({ params }: { params: { childId: string }
   if (!child) return null;
 
   const totalBooks = analysis?.total_books ?? 0;
-  const level = analysis?.reading_level ?? "씨앗";
   const points = totalBooks * 10;
-  const tier = TIER_INFO[level] ?? TIER_INFO["씨앗"];
+  const { tier, division, toNext, isMax, nextTier } = getLolTier(totalBooks);
 
   // 현재 레벨에서 열매 몇 개인지
   const fruitsOnTree = Math.min(totalBooks % FRUITS_PER_LEVEL || (totalBooks > 0 ? FRUITS_PER_LEVEL : 0), FRUIT_POSITIONS.length);
@@ -198,7 +223,7 @@ export default function ChildDashboard({ params }: { params: { childId: string }
                 className="inline-block text-sm font-bold px-3 py-0.5 rounded-full mt-1"
                 style={{ background: tier.color + "33", color: tier.color }}
               >
-                {LEVEL_TREE[level]} {tier.name}
+                {tier.emoji} {tier.name}{division ? ` ${division}` : ""}
               </div>
             </div>
             <div className="text-right">
@@ -288,6 +313,73 @@ export default function ChildDashboard({ params }: { params: { childId: string }
               <span>총 {totalBooks}권 읽음</span>
               <span>{points}P 획득</span>
             </div>
+          </div>
+        </div>
+
+        {/* ── 다독왕 티어 시스템 ── */}
+        <div className="bg-white rounded-3xl shadow-lg p-5">
+          <h3 className="text-lg font-black text-gray-800 mb-1">👑 다독왕 티어 시스템</h3>
+          <p className="text-sm text-gray-400 mb-4">책을 읽을수록 티어가 올라가요!</p>
+
+          {/* 현재 티어 카드 */}
+          <div
+            className="rounded-2xl p-4 mb-4 flex items-center gap-4"
+            style={{ background: tier.bg, border: `2px solid ${tier.color}` }}
+          >
+            <div className="text-5xl">{tier.emoji}</div>
+            <div className="flex-1">
+              <div className="text-xs text-gray-400 mb-0.5">현재 티어</div>
+              <div className="text-2xl font-black" style={{ color: tier.color }}>
+                {tier.name}{division ? ` ${division}` : ""}
+              </div>
+              <div className="text-sm text-gray-500">총 {totalBooks}권</div>
+            </div>
+            <div className="text-right">
+              {isMax ? (
+                <div className="text-sm font-black text-red-500">최고 티어!🎉</div>
+              ) : (
+                <>
+                  <div className="text-xs text-gray-400">다음 티어까지</div>
+                  <div className="text-xl font-black" style={{ color: tier.color }}>{toNext}권</div>
+                  <div className="text-xs text-gray-500">{nextTier?.emoji} {nextTier?.name}</div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* 전체 티어 로드맵 */}
+          <div className="grid grid-cols-4 gap-2 mb-4">
+            {LOL_TIERS.map((t) => {
+              const reached = totalBooks >= t.min;
+              const isCurrent = tier.name === t.name;
+              return (
+                <div
+                  key={t.name}
+                  className={`rounded-2xl p-2 text-center transition-all ${isCurrent ? "ring-2 scale-105 shadow" : ""} ${reached ? "" : "opacity-35 grayscale"}`}
+                  style={{ background: t.bg, outlineColor: t.color }}
+                >
+                  <div className="text-2xl mb-0.5">{t.emoji}</div>
+                  <div className="text-xs font-black text-gray-700 leading-tight">{t.name}</div>
+                  <div className="text-xs text-gray-400">{t.min}권~</div>
+                  {isCurrent && <div className="text-xs font-bold mt-0.5" style={{ color: t.color }}>현재</div>}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* 전체 진행바 */}
+          <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${Math.min((totalBooks / 90) * 100, 100)}%`,
+                background: "linear-gradient(90deg, #9ca3af, #b45309, #6b7280, #d97706, #059669, #0284c7, #7c3aed, #dc2626)",
+              }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-gray-400 mt-1">
+            <span>🪨 아이언</span>
+            <span>🔥 챌린저 90권+</span>
           </div>
         </div>
 
