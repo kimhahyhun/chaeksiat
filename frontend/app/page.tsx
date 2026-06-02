@@ -99,7 +99,7 @@ export default function Home() {
             {children.map((child) => (
               <div key={child.id} className="relative">
                 <Link
-                  href={`/dashboard/${child.id}`}
+                  href={`/child/${child.id}`}
                   className="block bg-white rounded-3xl p-6 shadow-sm hover:shadow-md transition-all hover:scale-105 text-center border-2 border-seed-100"
                 >
                   <div className="text-5xl mb-3">{AVATARS[child.avatar] ?? "👶"}</div>
