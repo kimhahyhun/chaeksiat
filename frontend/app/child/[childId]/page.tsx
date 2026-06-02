@@ -127,6 +127,18 @@ const TIER_INFO: Record<string, { name: string; color: string; bg: string }> = {
   "나무":    { name: "전설의 독서왕",  color: "#dc2626", bg: "#fee2e2" },
 };
 
+// 티어 로드맵 순서 + 조건
+const TIER_ROAD = [
+  { level: "씨앗",   emoji: "🌰", minBooks: 0,   maxBooks: 2  },
+  { level: "새싹",   emoji: "🌱", minBooks: 3,   maxBooks: 9  },
+  { level: "줄기",   emoji: "🪴", minBooks: 10,  maxBooks: 19 },
+  { level: "가지",   emoji: "🌿", minBooks: 20,  maxBooks: 34 },
+  { level: "잎사귀", emoji: "🍃", minBooks: 35,  maxBooks: 49 },
+  { level: "꽃",     emoji: "🌸", minBooks: 50,  maxBooks: 74 },
+  { level: "열매",   emoji: "🍎", minBooks: 75,  maxBooks: 99 },
+  { level: "나무",   emoji: "🌳", minBooks: 100, maxBooks: Infinity },
+];
+
 export default function ChildDashboard({ params }: { params: { childId: string } }) {
   const id = Number(params.childId);
 
@@ -290,6 +302,87 @@ export default function ChildDashboard({ params }: { params: { childId: string }
             </div>
           </div>
         </div>
+
+        {/* ── 다독왕 티어 시스템 ── */}
+        {analysis && (
+          <div className="bg-white rounded-3xl shadow-lg p-5">
+            <h3 className="text-lg font-black text-gray-800 mb-1">👑 다독왕 티어 시스템</h3>
+            <p className="text-sm text-gray-400 mb-5">책을 읽을수록 티어가 올라가요!</p>
+
+            {/* 현재 티어 강조 카드 */}
+            <div
+              className="rounded-2xl p-4 mb-5 flex items-center gap-4"
+              style={{ background: tier.bg, border: `2px solid ${tier.color}` }}
+            >
+              <div className="text-5xl">{LEVEL_TREE[level] ?? "🌰"}</div>
+              <div>
+                <div className="text-xs font-bold text-gray-500 mb-0.5">현재 티어</div>
+                <div className="text-2xl font-black" style={{ color: tier.color }}>{tier.name}</div>
+                <div className="text-sm text-gray-600 mt-0.5">총 {totalBooks}권 읽음</div>
+              </div>
+              <div className="ml-auto text-right">
+                {(() => {
+                  const currentTier = TIER_ROAD.find((t) => t.level === level);
+                  const nextTier = TIER_ROAD[TIER_ROAD.findIndex((t) => t.level === level) + 1];
+                  if (!nextTier) return <div className="text-sm font-black text-red-500">최고 티어! 🎉</div>;
+                  const needed = nextTier.minBooks - totalBooks;
+                  return (
+                    <>
+                      <div className="text-xs text-gray-500">다음 티어까지</div>
+                      <div className="text-lg font-black" style={{ color: tier.color }}>{needed}권</div>
+                      <div className="text-xs text-gray-500">{nextTier.emoji} {nextTier.level}</div>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* 전체 티어 로드맵 */}
+            <div className="grid grid-cols-4 gap-2">
+              {TIER_ROAD.map((t) => {
+                const isCurrent = t.level === level;
+                const isDone = totalBooks >= t.minBooks;
+                const info = TIER_INFO[t.level];
+                return (
+                  <div
+                    key={t.level}
+                    className={`rounded-2xl p-2.5 text-center transition-all ${
+                      isCurrent ? "ring-2 shadow-md scale-105" : ""
+                    } ${isDone ? "" : "opacity-40 grayscale"}`}
+                    style={{
+                      background: isCurrent ? info.bg : isDone ? info.bg + "88" : "#f3f4f6",
+                      ringColor: isCurrent ? info.color : "transparent",
+                    }}
+                  >
+                    <div className="text-2xl mb-1">{t.emoji}</div>
+                    <div className="text-xs font-black text-gray-700">{t.level}</div>
+                    <div className="text-xs text-gray-400 mt-0.5">{t.minBooks}권~</div>
+                    {isCurrent && (
+                      <div className="text-xs font-bold mt-1" style={{ color: info.color }}>현재</div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* 전체 진행바 */}
+            <div className="mt-4">
+              <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{
+                    width: `${Math.min((totalBooks / 100) * 100, 100)}%`,
+                    background: `linear-gradient(90deg, #4ade80, #22c55e, #0284c7, #7c3aed, #d97706, #dc2626)`,
+                  }}
+                />
+              </div>
+              <div className="flex justify-between text-xs text-gray-400 mt-1">
+                <span>🌰 0권</span>
+                <span>🌳 100권</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── 현재 가장 인기 있는 도서 ── */}
         {popularBooks.length > 0 && (
