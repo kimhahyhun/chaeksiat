@@ -58,6 +58,64 @@ const ALL_BADGES = [
   { name: "균형독서가", emoji: "⚖️", desc: "5개 분야 이상 2권씩" },
 ];
 
+// 정글 탐험 미션 목록
+const JUNGLE_MISSIONS = [
+  {
+    id: 1, emoji: "🌱", name: "첫 발걸음",
+    desc: "책 1권 읽기",
+    badge: "탐험 시작",
+    check: (total: number, _dist: Record<string, number>, streak: number) => total >= 1,
+  },
+  {
+    id: 2, emoji: "🦋", name: "숲속 친구",
+    desc: "책 3권 읽기",
+    badge: "숲속 친구",
+    check: (total: number) => total >= 3,
+  },
+  {
+    id: 3, emoji: "🍄", name: "버섯 발견",
+    desc: "2개 분야 이상 읽기",
+    badge: "분야 탐험가",
+    check: (_total: number, dist: Record<string, number>) => Object.keys(dist).length >= 2,
+  },
+  {
+    id: 4, emoji: "🐸", name: "개울 건너기",
+    desc: "책 5권 읽기",
+    badge: "개울 건너기",
+    check: (total: number) => total >= 5,
+  },
+  {
+    id: 5, emoji: "🔥", name: "모닥불 캠프",
+    desc: "3일 연속 읽기",
+    badge: "불꽃 독서가",
+    check: (_total: number, _dist: Record<string, number>, streak: number) => streak >= 3,
+  },
+  {
+    id: 6, emoji: "🌺", name: "꽃밭 도착",
+    desc: "3개 분야 이상 읽기",
+    badge: "다양한 독서가",
+    check: (_total: number, dist: Record<string, number>) => Object.keys(dist).length >= 3,
+  },
+  {
+    id: 7, emoji: "🦁", name: "사자 만남",
+    desc: "책 10권 읽기",
+    badge: "정글의 용사",
+    check: (total: number) => total >= 10,
+  },
+  {
+    id: 8, emoji: "🏔️", name: "정상 정복",
+    desc: "책 20권 읽기",
+    badge: "정글 마스터",
+    check: (total: number) => total >= 20,
+  },
+  {
+    id: 9, emoji: "⭐", name: "전설 달성",
+    desc: "책 50권 읽기",
+    badge: "전설의 탐험가",
+    check: (total: number) => total >= 50,
+  },
+];
+
 const TIER_INFO: Record<string, { name: string; color: string; bg: string }> = {
   "씨앗":    { name: "새싹 독서가",    color: "#86efac", bg: "#f0fdf4" },
   "새싹":    { name: "초보 독서가",    color: "#4ade80", bg: "#dcfce7" },
@@ -229,6 +287,101 @@ export default function ChildDashboard({ params }: { params: { childId: string }
             </div>
           </div>
         </div>
+
+        {/* ── 독서 정글 탐험 ── */}
+        {(() => {
+          const total = analysis?.total_books ?? 0;
+          const dist = analysis?.category_distribution ?? {};
+          const readDates = new Set(records.map((r) => r.read_at.slice(0, 10)));
+          let streak = 0;
+          const now = new Date();
+          for (let i = 0; i < 30; i++) {
+            const d = new Date(now);
+            d.setDate(now.getDate() - i);
+            if (readDates.has(d.toISOString().slice(0, 10))) streak++;
+            else if (i > 0) break;
+          }
+
+          const results = JUNGLE_MISSIONS.map((m) => ({
+            ...m,
+            done: m.check(total, dist, streak),
+          }));
+          const firstLocked = results.find((m) => !m.done);
+
+          return (
+            <div className="bg-white rounded-3xl shadow-lg p-5 overflow-hidden">
+              <h3 className="text-lg font-black text-gray-800 mb-1">🌴 독서 정글 탐험</h3>
+              <p className="text-sm text-gray-400 mb-5">미션을 달성하면 뱃지가 열려요!</p>
+
+              <div className="relative">
+                {/* 연결 경로선 */}
+                <div className="absolute left-7 top-4 bottom-4 w-0.5 bg-gradient-to-b from-green-300 via-yellow-300 to-gray-200 z-0" />
+
+                <div className="space-y-3 relative z-10">
+                  {results.map((mission, idx) => {
+                    const isNext = !mission.done && firstLocked?.id === mission.id;
+                    return (
+                      <div key={mission.id} className="flex items-center gap-4">
+                        {/* 노드 */}
+                        <div
+                          className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 shadow transition-all ${
+                            mission.done
+                              ? "bg-green-400 scale-110 shadow-green-200"
+                              : isNext
+                              ? "bg-amber-100 border-2 border-amber-400 animate-pulse"
+                              : "bg-gray-100 grayscale opacity-50"
+                          }`}
+                        >
+                          {mission.done ? "✅" : mission.emoji}
+                        </div>
+
+                        {/* 내용 */}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className={`font-black text-base ${mission.done ? "text-green-700" : isNext ? "text-amber-700" : "text-gray-400"}`}>
+                              {mission.name}
+                            </span>
+                            {mission.done && (
+                              <span className="text-xs bg-green-100 text-green-600 font-bold px-2 py-0.5 rounded-full">완료!</span>
+                            )}
+                            {isNext && (
+                              <span className="text-xs bg-amber-100 text-amber-600 font-bold px-2 py-0.5 rounded-full">진행중</span>
+                            )}
+                          </div>
+                          <p className={`text-sm mt-0.5 ${mission.done ? "text-gray-500" : isNext ? "text-amber-600" : "text-gray-300"}`}>
+                            {mission.desc}
+                          </p>
+                          {mission.done && (
+                            <span className="text-xs text-amber-500 font-semibold">🏅 {mission.badge}</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 전체 진행률 */}
+              <div className="mt-5 pt-4 border-t border-gray-100">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="font-semibold text-gray-600">탐험 진행률</span>
+                  <span className="font-black text-green-600">
+                    {results.filter((m) => m.done).length} / {results.length}
+                  </span>
+                </div>
+                <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{
+                      width: `${(results.filter((m) => m.done).length / results.length) * 100}%`,
+                      background: "linear-gradient(90deg, #4ade80, #22c55e)",
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── 나의 독서 밭 ── */}
         <div className="bg-white rounded-3xl shadow-lg p-5">
