@@ -110,14 +110,14 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
         <span className="text-3xl">{AVATARS[child.avatar] ?? "👶"}</span>
         <div>
           <h1 className="text-xl font-black text-gray-800">{child.name}의 책씨앗</h1>
-          <p className="text-sm text-gray-500">{getAge(child.birth_year)}살</p>
+          <p className="text-sm text-gray-500">{getAge(child.birth_year)}살 · 부모 관리 화면</p>
         </div>
-        {analysis && (
-          <div className="ml-auto text-right">
-            <div className="text-2xl">{LEVEL_TREE[analysis.reading_level] ?? "🌱"}</div>
-            <div className="text-xs font-bold text-seed-600">{analysis.reading_level}</div>
-          </div>
-        )}
+        <Link
+          href={`/child/${id}`}
+          className="ml-auto text-sm font-bold text-seed-600 bg-seed-50 px-3 py-1.5 rounded-xl hover:bg-seed-100 transition-colors"
+        >
+          🎮 아이 화면
+        </Link>
       </header>
 
       {/* 레벨 + 뱃지 바 */}
