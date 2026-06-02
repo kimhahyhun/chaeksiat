@@ -145,8 +145,8 @@ export default function ChildDashboard({ params }: { params: { childId: string }
       setChild(c);
       setRecords(r);
       setAnalysis(a);
-      const age = new Date().getFullYear() - c.birth_year;
-      analysisApi.popularBooks(age).then(setPopularBooks).catch(() => {});
+      const age = Math.min(new Date().getFullYear() - c.birth_year, 19);
+      analysisApi.popularBooks(Math.max(age, 1)).then(setPopularBooks).catch(() => {});
     }).finally(() => setLoading(false));
   }, [id]);
 
