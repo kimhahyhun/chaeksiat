@@ -8,21 +8,21 @@ import { AVATARS, LEVEL_TREE, KDC_COLORS } from "@/lib/utils";
 
 // 열매 위치 — 나무 수관(canopy) 영역에 배치
 const FRUIT_POSITIONS = [
-  { top: "38%", left: "48%" },
-  { top: "32%", left: "40%" },
-  { top: "32%", left: "56%" },
-  { top: "44%", left: "35%" },
-  { top: "44%", left: "61%" },
-  { top: "26%", left: "47%" },
-  { top: "50%", left: "42%" },
-  { top: "50%", left: "54%" },
-  { top: "38%", left: "33%" },
-  { top: "38%", left: "63%" },
-  { top: "56%", left: "38%" },
-  { top: "56%", left: "58%" },
-  { top: "44%", left: "48%" },
-  { top: "30%", left: "36%" },
-  { top: "30%", left: "60%" },
+  { top: "52%", left: "48%" },
+  { top: "46%", left: "38%" },
+  { top: "46%", left: "58%" },
+  { top: "58%", left: "34%" },
+  { top: "58%", left: "62%" },
+  { top: "40%", left: "46%" },
+  { top: "64%", left: "40%" },
+  { top: "64%", left: "56%" },
+  { top: "52%", left: "32%" },
+  { top: "52%", left: "64%" },
+  { top: "70%", left: "44%" },
+  { top: "70%", left: "52%" },
+  { top: "46%", left: "48%" },
+  { top: "58%", left: "48%" },
+  { top: "40%", left: "54%" },
 ];
 
 const FRUITS_PER_LEVEL = 5;
