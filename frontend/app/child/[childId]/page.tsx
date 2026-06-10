@@ -347,14 +347,25 @@ export default function ChildDashboard({ params }: { params: { childId: string }
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
               {librarianBooks.map((book, i) => (
                 <div key={book.id} className="flex-shrink-0 w-28">
-                  {/* 표지 자리 */}
-                  <div className="w-28 h-40 rounded-xl overflow-hidden shadow-md mb-2 relative bg-amber-50 border border-amber-100 flex items-center justify-center">
-                    <div className="text-center px-2">
-                      <div className="text-2xl mb-1">📖</div>
-                      <p className="text-xs font-bold text-amber-800 line-clamp-3 leading-tight">
-                        {book.title}
-                      </p>
-                    </div>
+                  {/* 표지 */}
+                  <div className="w-28 h-40 rounded-xl overflow-hidden shadow-md mb-2 relative bg-amber-50 border border-amber-100">
+                    {book.cover_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={book.cover_url}
+                        alt={book.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="text-center px-2">
+                          <div className="text-2xl mb-1">📖</div>
+                          <p className="text-xs font-bold text-amber-800 line-clamp-3 leading-tight">
+                            {book.title}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                     {/* 추천 뱃지 */}
                     <div className="absolute top-1.5 right-1.5 bg-amber-400 text-white text-xs font-black px-1.5 py-0.5 rounded-full">
                       ⭐

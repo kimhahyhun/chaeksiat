@@ -41,9 +41,10 @@ class LibrarianBook(Base):
     authors: Mapped[str | None] = mapped_column(String(300))
     publisher: Mapped[str | None] = mapped_column(String(100))
     pub_year: Mapped[int | None] = mapped_column(Integer)
-    subject: Mapped[str | None] = mapped_column(String(50))   # 주제구분
-    target_age: Mapped[str] = mapped_column(String(20))        # 유아/초등저학년/초등고학년
-    recommend_date: Mapped[str | None] = mapped_column(String(10))  # 2007-01
+    subject: Mapped[str | None] = mapped_column(String(50))
+    target_age: Mapped[str] = mapped_column(String(20))
+    recommend_date: Mapped[str | None] = mapped_column(String(10))
+    cover_url: Mapped[str | None] = mapped_column(String(500))
 
 
 class ReadingRecord(Base):

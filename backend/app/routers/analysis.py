@@ -105,4 +105,20 @@ async def librarian_books(
         .order_by(func.random())
         .limit(limit)
     )
-    return result.scalars().all()
+    books = result.scalars().all()
+
+    # ISBN 있고 cover_url 없는 책은 API 조회 후 캐싱
+    import asyncio
+    from app.services.library_api import fetch_book_detail
+
+    async def fill_cover(book: LibrarianBook):
+        if book.isbn13 and not book.cover_url:
+            detail = await fetch_book_detail(book.isbn13)
+            if detail and detail.get("cover_url"):
+                book.cover_url = detail["cover_url"]
+                await db.merge(book)
+
+    await asyncio.gather(*[fill_cover(b) for b in books])
+    await db.commit()
+
+    return books
