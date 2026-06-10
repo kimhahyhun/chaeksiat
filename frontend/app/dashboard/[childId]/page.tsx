@@ -72,10 +72,14 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
 
   async function handleDeleteRecord(recordId: number) {
     if (!confirm("이 독서 기록을 삭제할까요?")) return;
-    await booksApi.deleteRecord(id, recordId);
-    setRecords((prev) => prev.filter((r) => r.id !== recordId));
-    const newAnalysis = await analysisApi.analyze(id);
-    setAnalysis(newAnalysis);
+    try {
+      await booksApi.deleteRecord(id, recordId);
+      setRecords((prev) => prev.filter((r) => r.id !== recordId));
+      const newAnalysis = await analysisApi.analyze(id);
+      setAnalysis(newAnalysis);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "삭제 중 오류가 발생했어요");
+    }
   }
 
   if (loading) {
