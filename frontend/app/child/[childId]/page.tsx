@@ -6,23 +6,23 @@ import { childrenApi, booksApi, analysisApi } from "@/lib/api";
 import type { Child, ReadingAnalysis, ReadingRecord, RecommendedBook, LibrarianBook } from "@/lib/api";
 import { AVATARS, LEVEL_TREE, KDC_COLORS } from "@/lib/utils";
 
-// 책 수에 따른 열매 위치 (나무 위에 자연스럽게 배치)
+// 열매 위치 — 나무 수관(canopy) 영역에 배치
 const FRUIT_POSITIONS = [
-  { top: "28%", left: "48%" },
-  { top: "22%", left: "38%" },
-  { top: "22%", left: "58%" },
-  { top: "32%", left: "32%" },
-  { top: "32%", left: "64%" },
-  { top: "18%", left: "48%" },
-  { top: "38%", left: "28%" },
-  { top: "38%", left: "68%" },
-  { top: "14%", left: "40%" },
-  { top: "14%", left: "56%" },
-  { top: "42%", left: "36%" },
-  { top: "42%", left: "60%" },
-  { top: "10%", left: "48%" },
-  { top: "26%", left: "26%" },
-  { top: "26%", left: "70%" },
+  { top: "38%", left: "48%" },
+  { top: "32%", left: "40%" },
+  { top: "32%", left: "56%" },
+  { top: "44%", left: "35%" },
+  { top: "44%", left: "61%" },
+  { top: "26%", left: "47%" },
+  { top: "50%", left: "42%" },
+  { top: "50%", left: "54%" },
+  { top: "38%", left: "33%" },
+  { top: "38%", left: "63%" },
+  { top: "56%", left: "38%" },
+  { top: "56%", left: "58%" },
+  { top: "44%", left: "48%" },
+  { top: "30%", left: "36%" },
+  { top: "30%", left: "60%" },
 ];
 
 const FRUITS_PER_LEVEL = 5;
@@ -243,8 +243,8 @@ export default function ChildDashboard({ params }: { params: { childId: string }
             <div
               className="absolute left-1/2 -translate-x-1/2 select-none transition-all duration-700"
               style={{
-                bottom: 20,
-                fontSize: `${Math.min(80 + analysis?.level_score! * 12, 160)}px`,
+                bottom: 0,
+                fontSize: `${Math.min(160 + (analysis?.level_score ?? 0) * 15, 240)}px`,
                 lineHeight: 1,
               }}
             >
