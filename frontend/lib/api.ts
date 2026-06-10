@@ -9,6 +9,7 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
     const err = await res.json().catch(() => ({}));
     throw new Error((err as { detail?: string }).detail ?? res.statusText);
   }
+  if (res.status === 204) return undefined as T;
   return res.json();
 }
 
