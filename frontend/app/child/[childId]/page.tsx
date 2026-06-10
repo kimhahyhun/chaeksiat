@@ -6,23 +6,23 @@ import { childrenApi, booksApi, analysisApi } from "@/lib/api";
 import type { Child, ReadingAnalysis, ReadingRecord, RecommendedBook, LibrarianBook } from "@/lib/api";
 import { AVATARS, LEVEL_TREE, KDC_COLORS } from "@/lib/utils";
 
-// 열매 위치 — 나무 수관(canopy) 영역에 배치
+// 열매 위치 — 수관 div 내부 기준 (top/left %)
 const FRUIT_POSITIONS = [
-  { top: "52%", left: "48%" },
-  { top: "46%", left: "38%" },
-  { top: "46%", left: "58%" },
-  { top: "58%", left: "34%" },
-  { top: "58%", left: "62%" },
-  { top: "40%", left: "46%" },
-  { top: "64%", left: "40%" },
-  { top: "64%", left: "56%" },
-  { top: "52%", left: "32%" },
-  { top: "52%", left: "64%" },
-  { top: "70%", left: "44%" },
-  { top: "70%", left: "52%" },
-  { top: "46%", left: "48%" },
-  { top: "58%", left: "48%" },
-  { top: "40%", left: "54%" },
+  { top: "50%", left: "50%" },
+  { top: "30%", left: "38%" },
+  { top: "30%", left: "62%" },
+  { top: "55%", left: "28%" },
+  { top: "55%", left: "72%" },
+  { top: "20%", left: "50%" },
+  { top: "65%", left: "40%" },
+  { top: "65%", left: "60%" },
+  { top: "42%", left: "22%" },
+  { top: "42%", left: "78%" },
+  { top: "38%", left: "50%" },
+  { top: "70%", left: "50%" },
+  { top: "25%", left: "30%" },
+  { top: "25%", left: "70%" },
+  { top: "58%", left: "50%" },
 ];
 
 const FRUITS_PER_LEVEL = 5;
@@ -229,43 +229,64 @@ export default function ChildDashboard({ params }: { params: { childId: string }
 
           {/* 나무 영역 */}
           <div
-            className="relative mx-4 mb-4 rounded-2xl overflow-hidden"
+            className="relative mx-4 mb-4 rounded-2xl overflow-hidden flex flex-col items-center justify-end"
             style={{
               background: "linear-gradient(180deg, #bfdbfe 0%, #dbeafe 40%, #bbf7d0 70%, #86efac 100%)",
-              height: 280,
+              height: 300,
             }}
           >
             {/* 구름 */}
             <div className="absolute top-3 left-6 text-3xl opacity-60">☁️</div>
             <div className="absolute top-5 right-8 text-2xl opacity-50">☁️</div>
 
-            {/* 나무 이모지 (레벨에 따라 크기 변화) */}
-            <div
-              className="absolute left-1/2 -translate-x-1/2 select-none transition-all duration-700"
-              style={{
-                bottom: 0,
-                fontSize: `${Math.min(160 + (analysis?.level_score ?? 0) * 15, 240)}px`,
-                lineHeight: 1,
-              }}
-            >
-              🌳
-            </div>
-
-            {/* 열매들 */}
-            {FRUIT_POSITIONS.slice(0, fruitsOnTree).map((pos, i) => (
-              <div
-                key={i}
-                className="absolute text-xl animate-grow select-none"
-                style={{ top: pos.top, left: pos.left }}
-              >
-                🍎
-              </div>
-            ))}
-
             {/* 레벨 뱃지 */}
-            <div className="absolute top-3 right-3 bg-white/80 backdrop-blur rounded-2xl px-3 py-1.5 text-center shadow">
+            <div className="absolute top-3 right-3 bg-white/80 backdrop-blur rounded-2xl px-3 py-1.5 text-center shadow z-10">
               <div className="text-lg font-black text-green-700">Lv.{analysis?.level_score ?? 0}</div>
               <div className="text-xs text-gray-500">{level}</div>
+            </div>
+
+            {/* CSS 나무 */}
+            <div className="relative flex flex-col items-center" style={{ marginBottom: 0 }}>
+              {/* 수관 — 열매가 여기 안에 배치됨 */}
+              <div
+                className="relative rounded-full flex items-center justify-center transition-all duration-700"
+                style={{
+                  width: `${Math.min(150 + (analysis?.level_score ?? 0) * 15, 220)}px`,
+                  height: `${Math.min(140 + (analysis?.level_score ?? 0) * 14, 210)}px`,
+                  background: "radial-gradient(circle at 40% 35%, #86efac, #22c55e 50%, #15803d)",
+                  boxShadow: "inset -8px -8px 20px rgba(0,0,0,0.15), 4px 4px 12px rgba(0,0,0,0.1)",
+                }}
+              >
+                {/* 열매들 — 수관 안에 절대 위치 */}
+                {FRUIT_POSITIONS.slice(0, fruitsOnTree).map((pos, i) => (
+                  <div
+                    key={i}
+                    className="absolute text-xl animate-grow select-none"
+                    style={{ top: pos.top, left: pos.left, transform: "translate(-50%, -50%)" }}
+                  >
+                    🍎
+                  </div>
+                ))}
+              </div>
+              {/* 기둥 */}
+              <div
+                style={{
+                  width: 28,
+                  height: 60,
+                  background: "linear-gradient(to right, #92400e, #b45309 40%, #92400e)",
+                  borderRadius: "0 0 6px 6px",
+                }}
+              />
+              {/* 잔디 */}
+              <div
+                style={{
+                  width: 120,
+                  height: 16,
+                  background: "radial-gradient(ellipse, #4ade80, #16a34a)",
+                  borderRadius: "50%",
+                  marginTop: -6,
+                }}
+              />
             </div>
           </div>
 
