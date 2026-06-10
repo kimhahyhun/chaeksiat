@@ -6,23 +6,23 @@ import { childrenApi, booksApi, analysisApi } from "@/lib/api";
 import type { Child, ReadingAnalysis, ReadingRecord, RecommendedBook, LibrarianBook } from "@/lib/api";
 import { AVATARS, LEVEL_TREE, KDC_COLORS } from "@/lib/utils";
 
-// 열매 위치 — 큰 나무 수관 기준 (top 15~55%, left 30~70%)
+// 열매 위치 — 수관 중심부 기준
 const FRUIT_POSITIONS = [
-  { top: "32%", left: "50%" },
-  { top: "24%", left: "41%" },
-  { top: "24%", left: "59%" },
-  { top: "40%", left: "36%" },
-  { top: "40%", left: "64%" },
-  { top: "18%", left: "50%" },
-  { top: "46%", left: "40%" },
-  { top: "46%", left: "60%" },
-  { top: "30%", left: "34%" },
-  { top: "30%", left: "66%" },
-  { top: "36%", left: "50%" },
-  { top: "22%", left: "46%" },
-  { top: "22%", left: "54%" },
-  { top: "44%", left: "50%" },
-  { top: "28%", left: "44%" },
+  { top: "42%", left: "50%" },
+  { top: "35%", left: "40%" },
+  { top: "35%", left: "60%" },
+  { top: "50%", left: "37%" },
+  { top: "50%", left: "63%" },
+  { top: "30%", left: "50%" },
+  { top: "55%", left: "43%" },
+  { top: "55%", left: "57%" },
+  { top: "40%", left: "34%" },
+  { top: "40%", left: "66%" },
+  { top: "46%", left: "50%" },
+  { top: "33%", left: "44%" },
+  { top: "33%", left: "56%" },
+  { top: "52%", left: "50%" },
+  { top: "38%", left: "47%" },
 ];
 
 const FRUITS_PER_LEVEL = 5;
