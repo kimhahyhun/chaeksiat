@@ -32,6 +32,20 @@ class Book(Base):
     records: Mapped[list["ReadingRecord"]] = relationship(back_populates="book")
 
 
+class LibrarianBook(Base):
+    __tablename__ = "librarian_books"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    isbn13: Mapped[str | None] = mapped_column(String(20))
+    title: Mapped[str] = mapped_column(String(300))
+    authors: Mapped[str | None] = mapped_column(String(300))
+    publisher: Mapped[str | None] = mapped_column(String(100))
+    pub_year: Mapped[int | None] = mapped_column(Integer)
+    subject: Mapped[str | None] = mapped_column(String(50))   # 주제구분
+    target_age: Mapped[str] = mapped_column(String(20))        # 유아/초등저학년/초등고학년
+    recommend_date: Mapped[str | None] = mapped_column(String(10))  # 2007-01
+
+
 class ReadingRecord(Base):
     __tablename__ = "reading_records"
 

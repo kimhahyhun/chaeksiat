@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { childrenApi, booksApi, analysisApi } from "@/lib/api";
-import type { Child, ReadingAnalysis, ReadingRecord, RecommendedBook } from "@/lib/api";
+import type { Child, ReadingAnalysis, ReadingRecord, RecommendedBook, LibrarianBook } from "@/lib/api";
 import { AVATARS, LEVEL_TREE, KDC_COLORS } from "@/lib/utils";
 
 // 책 수에 따른 열매 위치 (나무 위에 자연스럽게 배치)
@@ -134,6 +134,7 @@ export default function ChildDashboard({ params }: { params: { childId: string }
   const [analysis, setAnalysis] = useState<ReadingAnalysis | null>(null);
   const [records, setRecords] = useState<ReadingRecord[]>([]);
   const [popularBooks, setPopularBooks] = useState<RecommendedBook[]>([]);
+  const [librarianBooks, setLibrarianBooks] = useState<LibrarianBook[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -147,6 +148,7 @@ export default function ChildDashboard({ params }: { params: { childId: string }
       setAnalysis(a);
       const age = Math.min(new Date().getFullYear() - c.birth_year, 19);
       analysisApi.popularBooks(Math.max(age, 1)).then(setPopularBooks).catch(() => {});
+      analysisApi.librarianBooks(Math.max(age, 1)).then(setLibrarianBooks).catch(() => {});
     }).finally(() => setLoading(false));
   }, [id]);
 
@@ -329,6 +331,38 @@ export default function ChildDashboard({ params }: { params: { childId: string }
                   </div>
                   <p className="text-xs font-bold text-gray-700 line-clamp-2 leading-tight">{book.title}</p>
                   <p className="text-xs text-gray-400 mt-0.5 truncate">{book.authors?.split(";")[0]}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── 사서 선생님 추천 ── */}
+        {librarianBooks.length > 0 && (
+          <div className="bg-white rounded-3xl shadow-lg p-5">
+            <h3 className="text-lg font-black text-gray-800 mb-1">📚 사서 선생님 추천</h3>
+            <p className="text-sm text-gray-400 mb-4">
+              국립어린이청소년도서관 사서 선생님이 직접 고른 책이에요!
+            </p>
+            <div className="space-y-3">
+              {librarianBooks.map((book) => (
+                <div key={book.id} className="flex items-center gap-3 p-3 bg-amber-50 rounded-2xl border border-amber-100">
+                  <div className="text-2xl flex-shrink-0">📖</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-gray-800 text-sm line-clamp-1">{book.title}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 truncate">{book.authors}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      {book.subject && (
+                        <span className="text-xs bg-amber-200 text-amber-800 font-semibold px-2 py-0.5 rounded-full">
+                          {book.subject}
+                        </span>
+                      )}
+                      {book.pub_year && (
+                        <span className="text-xs text-gray-400">{book.pub_year}년</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-xs text-amber-500 font-bold flex-shrink-0">⭐ 추천</div>
                 </div>
               ))}
             </div>

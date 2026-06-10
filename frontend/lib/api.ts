@@ -90,10 +90,23 @@ export const booksApi = {
     req<void>(`/children/${childId}/records/${recordId}`, { method: "DELETE" }),
 };
 
+export interface LibrarianBook {
+  id: number;
+  isbn13: string | null;
+  title: string;
+  authors: string | null;
+  publisher: string | null;
+  pub_year: number | null;
+  subject: string | null;
+  target_age: string;
+}
+
 export const analysisApi = {
   analyze: (childId: number) => req<ReadingAnalysis>(`/children/${childId}/analysis`),
   recommend: (childId: number) =>
     req<RecommendedBook[]>(`/children/${childId}/recommendations`),
   popularBooks: (age: number) =>
     req<RecommendedBook[]>(`/popular-books?age=${age}`),
+  librarianBooks: (age: number) =>
+    req<LibrarianBook[]>(`/librarian-books?age=${age}&limit=10`),
 };
