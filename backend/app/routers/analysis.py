@@ -45,7 +45,27 @@ async def recommend(child_id: int, db: AsyncSession = Depends(get_db)):
 
 @router.get("/popular-books", response_model=list[RecommendedBook])
 async def popular_books(age: int = Query(default=8, ge=1, le=19)):
-    books = await fetch_popular_books(age=age, page_size=20)
+    # 2페이지 병렬 조회로 더 많은 책 확보
+    import asyncio
+    page1, page2 = await asyncio.gather(
+        fetch_popular_books(age=age, page_no=1, page_size=100),
+        fetch_popular_books(age=age, page_no=2, page_size=100),
+    )
+    all_books = page1 + page2
+
+    # 제목 앞 5글자 기준 중복 제거 (흔한남매 1~20권 중복 방지)
+    seen_titles: set[str] = set()
+    deduped = []
+    for b in all_books:
+        title = b.get("title", "")
+        key = title[:5]
+        if key not in seen_titles and b.get("isbn13") and title:
+            seen_titles.add(key)
+            deduped.append(b)
+
+    # 랜덤 셔플로 매번 다른 책 노출
+    random.shuffle(deduped)
+
     return [
         RecommendedBook(
             isbn13=b.get("isbn13", ""),
@@ -57,8 +77,7 @@ async def popular_books(age: int = Query(default=8, ge=1, le=19)):
             cover_url=b.get("cover_url"),
             reason="이번 달 인기 도서",
         )
-        for b in books
-        if b.get("isbn13") and b.get("title")
+        for b in deduped[:20]
     ]
 
 
