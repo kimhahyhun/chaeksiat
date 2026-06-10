@@ -25,3 +25,10 @@ async def get_db() -> AsyncSession:
 async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # cover_url 컬럼 없으면 추가 (기존 DB 호환)
+        try:
+            await conn.exec_driver_sql(
+                "ALTER TABLE librarian_books ADD COLUMN cover_url VARCHAR(500)"
+            )
+        except Exception:
+            pass

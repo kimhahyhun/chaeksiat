@@ -72,6 +72,7 @@ class LibrarianBookResponse(BaseModel):
     pub_year: int | None = None
     subject: str | None = None
     target_age: str
+    cover_url: str | None = None
 
     model_config = {"from_attributes": True}
 

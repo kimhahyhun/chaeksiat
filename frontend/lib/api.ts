@@ -99,6 +99,7 @@ export interface LibrarianBook {
   pub_year: number | null;
   subject: string | null;
   target_age: string;
+  cover_url: string | null;
 }
 
 export const analysisApi = {
