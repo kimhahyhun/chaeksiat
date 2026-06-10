@@ -344,25 +344,26 @@ export default function ChildDashboard({ params }: { params: { childId: string }
             <p className="text-sm text-gray-400 mb-4">
               국립어린이청소년도서관 사서 선생님이 직접 고른 책이에요!
             </p>
-            <div className="space-y-3">
-              {librarianBooks.map((book) => (
-                <div key={book.id} className="flex items-center gap-3 p-3 bg-amber-50 rounded-2xl border border-amber-100">
-                  <div className="text-2xl flex-shrink-0">📖</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-gray-800 text-sm line-clamp-1">{book.title}</p>
-                    <p className="text-xs text-gray-500 mt-0.5 truncate">{book.authors}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      {book.subject && (
-                        <span className="text-xs bg-amber-200 text-amber-800 font-semibold px-2 py-0.5 rounded-full">
-                          {book.subject}
-                        </span>
-                      )}
-                      {book.pub_year && (
-                        <span className="text-xs text-gray-400">{book.pub_year}년</span>
-                      )}
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+              {librarianBooks.map((book, i) => (
+                <div key={book.id} className="flex-shrink-0 w-28">
+                  {/* 표지 자리 */}
+                  <div className="w-28 h-40 rounded-xl overflow-hidden shadow-md mb-2 relative bg-amber-50 border border-amber-100 flex items-center justify-center">
+                    <div className="text-center px-2">
+                      <div className="text-2xl mb-1">📖</div>
+                      <p className="text-xs font-bold text-amber-800 line-clamp-3 leading-tight">
+                        {book.title}
+                      </p>
+                    </div>
+                    {/* 추천 뱃지 */}
+                    <div className="absolute top-1.5 right-1.5 bg-amber-400 text-white text-xs font-black px-1.5 py-0.5 rounded-full">
+                      ⭐
                     </div>
                   </div>
-                  <div className="text-xs text-amber-500 font-bold flex-shrink-0">⭐ 추천</div>
+                  <p className="text-xs font-bold text-gray-700 line-clamp-2 leading-tight">{book.title}</p>
+                  {book.subject && (
+                    <span className="text-xs text-amber-600 font-semibold">{book.subject}</span>
+                  )}
                 </div>
               ))}
             </div>
