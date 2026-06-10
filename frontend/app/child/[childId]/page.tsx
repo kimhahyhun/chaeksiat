@@ -342,7 +342,7 @@ export default function ChildDashboard({ params }: { params: { childId: string }
           <div className="bg-white rounded-3xl shadow-lg p-5">
             <h3 className="text-lg font-black text-gray-800 mb-1">📚 사서 선생님 추천</h3>
             <p className="text-sm text-gray-400 mb-4">
-              국립어린이청소년도서관 사서 선생님이 직접 고른 책이에요!
+              사서 선생님이 직접 고른 책이에요!
             </p>
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
               {librarianBooks.map((book, i) => (
