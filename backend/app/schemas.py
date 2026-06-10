@@ -63,6 +63,19 @@ class ReadingAnalysis(BaseModel):
     badges: list[str]
 
 
+class LibrarianBookResponse(BaseModel):
+    id: int
+    isbn13: str | None
+    title: str
+    authors: str | None = None
+    publisher: str | None = None
+    pub_year: int | None = None
+    subject: str | None = None
+    target_age: str
+
+    model_config = {"from_attributes": True}
+
+
 class RecommendedBook(BaseModel):
     isbn13: str
     title: str

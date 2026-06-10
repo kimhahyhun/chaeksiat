@@ -1,10 +1,11 @@
+import random
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 from app.database import get_db
-from app.models import Child, ReadingRecord
-from app.schemas import ReadingAnalysis, RecommendedBook
+from app.models import Child, ReadingRecord, LibrarianBook
+from app.schemas import ReadingAnalysis, RecommendedBook, LibrarianBookResponse
 from app.services.recommender import compute_analysis, get_recommendations
 from app.services.library_api import fetch_popular_books
 
@@ -59,3 +60,30 @@ async def popular_books(age: int = Query(default=8, ge=1, le=19)):
         for b in books
         if b.get("isbn13") and b.get("title")
     ]
+
+
+@router.get("/librarian-books", response_model=list[LibrarianBookResponse])
+async def librarian_books(
+    age: int = Query(default=8, ge=1, le=19),
+    limit: int = Query(default=10, ge=1, le=30),
+    db: AsyncSession = Depends(get_db),
+):
+    from app.services.library_api import get_age_group
+    group = get_age_group(age)
+    label = group["label"]
+
+    # 연령 그룹 매핑
+    target_map = {
+        "영유아": "유아",
+        "초등 저학년": "초등저학년",
+        "초등 고학년": "초등고학년",
+    }
+    target = target_map.get(label, "초등저학년")
+
+    result = await db.execute(
+        select(LibrarianBook)
+        .where(LibrarianBook.target_age == target)
+        .order_by(func.random())
+        .limit(limit)
+    )
+    return result.scalars().all()
