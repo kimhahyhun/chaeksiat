@@ -47,13 +47,13 @@ function getFieldLevel(count: number) {
 
 // 전체 배지 목록
 const ALL_BADGES = [
-  { name: "문학왕",    emoji: "📚", desc: "문학 5권마다 배지 하나씩" },
-  { name: "과학탐험가", emoji: "🔬", desc: "자연과학 5권마다 배지 하나씩" },
-  { name: "사회박사",  emoji: "🌍", desc: "사회과학 5권마다 배지 하나씩" },
-  { name: "예술가",    emoji: "🎨", desc: "예술 5권마다 배지 하나씩" },
-  { name: "역사학자",  emoji: "🏛️", desc: "역사·지리 5권마다 배지 하나씩" },
-  { name: "다독왕",    emoji: "👑", desc: "총 20권마다 배지 하나씩" },
-  { name: "균형독서가", emoji: "⚖️", desc: "5개 분야 이상 2권씩" },
+  { name: "문학왕",    emoji: "📚", desc: "문학 5권마다\n배지 하나씩" },
+  { name: "과학탐험가", emoji: "🔬", desc: "자연과학 5권마다\n배지 하나씩" },
+  { name: "사회박사",  emoji: "🌍", desc: "사회과학 5권마다\n배지 하나씩" },
+  { name: "예술가",    emoji: "🎨", desc: "예술 5권마다\n배지 하나씩" },
+  { name: "역사학자",  emoji: "🏛️", desc: "역사·지리 5권마다\n배지 하나씩" },
+  { name: "다독왕",    emoji: "👑", desc: "총 20권마다\n배지 하나씩" },
+  { name: "균형독서가", emoji: "⚖️", desc: "5개 분야 이상\n2권씩" },
 ];
 
 // 정글 탐험 미션 목록
@@ -743,7 +743,7 @@ export default function ChildDashboard({ params }: { params: { childId: string }
                     {badge.name}
                   </div>
                   {!earned && (
-                    <div className="text-xs text-gray-300 mt-0.5 leading-tight">{badge.desc}</div>
+                    <div className="text-xs text-gray-300 mt-0.5 leading-tight whitespace-pre-line">{badge.desc}</div>
                   )}
                 </div>
               );
