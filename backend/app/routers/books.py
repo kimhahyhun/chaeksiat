@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from app.database import get_db
 from app.models import Child, Book, ReadingRecord
-from app.schemas import ReadingRecordCreate, ReadingRecordResponse, BookInfo
+from app.schemas import ReadingRecordCreate, ReadingRecordUpdate, ReadingRecordResponse, BookInfo
 from app.services.library_api import fetch_book_detail
 
 router = APIRouter(tags=["books"])
@@ -78,6 +78,29 @@ async def get_reading_records(child_id: int, db: AsyncSession = Depends(get_db))
         .order_by(ReadingRecord.read_at.desc())
     )
     return result.scalars().all()
+
+
+@router.patch("/children/{child_id}/records/{record_id}", response_model=ReadingRecordResponse)
+async def update_record(
+    child_id: int,
+    record_id: int,
+    body: ReadingRecordUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    record = await db.get(ReadingRecord, record_id)
+    if not record or record.child_id != child_id:
+        raise HTTPException(status_code=404, detail="기록을 찾을 수 없어요")
+
+    for field, value in body.model_dump(exclude_unset=True).items():
+        setattr(record, field, value)
+    await db.commit()
+
+    result = await db.execute(
+        select(ReadingRecord)
+        .options(selectinload(ReadingRecord.book))
+        .where(ReadingRecord.id == record_id)
+    )
+    return result.scalar_one()
 
 
 @router.delete("/children/{child_id}/records/{record_id}", status_code=204)

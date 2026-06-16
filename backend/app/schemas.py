@@ -43,6 +43,12 @@ class ReadingRecordCreate(BaseModel):
     isbn13: str
     read_at: date = Field(default_factory=date.today)
     rating: float | None = Field(None, ge=1, le=5)
+    note: str | None = Field(None, max_length=500)
+
+
+class ReadingRecordUpdate(BaseModel):
+    note: str | None = Field(None, max_length=500)
+    rating: float | None = Field(None, ge=1, le=5)
 
 
 class ReadingRecordResponse(BaseModel):
@@ -50,6 +56,7 @@ class ReadingRecordResponse(BaseModel):
     isbn13: str
     read_at: date
     rating: float | None
+    note: str | None = None
     book: BookInfo
 
     model_config = {"from_attributes": True}
