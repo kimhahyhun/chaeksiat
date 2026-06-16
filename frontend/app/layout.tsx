@@ -5,12 +5,12 @@ export const metadata: Metadata = {
   title: "책씨앗 | 아이의 독서 습관을 키워요",
   description: "아이의 독서 이력을 기반으로 맞춤 도서를 추천하는 성장 플랫폼",
   manifest: "/manifest.json",
-  themeColor: "#22c55e",
 };
 
 export const viewport = {
   width: "device-width",
   initialScale: 1,
+  themeColor: "#22c55e",
 };
 
 export default function RootLayout({

@@ -16,15 +16,15 @@ READING_LEVELS = [
     (100, "나무",   7),
 ]
 
-BADGES = {
-    "문학왕":   lambda dist: dist.get("문학", 0) >= 5,
-    "과학탐험가": lambda dist: dist.get("자연과학", 0) >= 3,
-    "사회박사": lambda dist: dist.get("사회과학", 0) >= 3,
-    "예술가":   lambda dist: dist.get("예술", 0) >= 3,
-    "역사학자": lambda dist: dist.get("역사·지리", 0) >= 3,
-    "만독왕":   lambda dist: sum(dist.values()) >= 20,
-    "균형독서가": lambda dist: len([v for v in dist.values() if v >= 2]) >= 5,
+# 분야별 배지: 3권마다 1단계씩 누적
+SUBJECT_BADGES = {
+    "문학왕": "문학",
+    "과학탐험가": "자연과학",
+    "사회박사": "사회과학",
+    "예술가": "예술",
+    "역사학자": "역사·지리",
 }
+BADGE_BOOKS_PER_LEVEL = 5
 
 
 def compute_analysis(records: list) -> dict:
@@ -41,7 +41,16 @@ def compute_analysis(records: list) -> dict:
         if total >= threshold:
             level_name, level_score = name, score
 
-    earned_badges = [name for name, check in BADGES.items() if check(dict(dist))]
+    earned_badges = []
+    for name, cat in SUBJECT_BADGES.items():
+        level = dist.get(cat, 0) // BADGE_BOOKS_PER_LEVEL
+        if level > 0:
+            earned_badges.append({"name": name, "level": level})
+
+    if total >= 20:
+        earned_badges.append({"name": "다독왕", "level": total // 20})
+    if len([v for v in dist.values() if v >= 2]) >= 5:
+        earned_badges.append({"name": "균형독서가", "level": 1})
 
     return {
         "total_books": total,

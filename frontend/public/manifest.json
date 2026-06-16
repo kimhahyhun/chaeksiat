@@ -1,0 +1,16 @@
+{
+  "name": "책씨앗",
+  "short_name": "책씨앗",
+  "description": "아이의 독서 습관을 키워요",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f0fdf4",
+  "theme_color": "#22c55e",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}

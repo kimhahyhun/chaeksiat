@@ -139,10 +139,10 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
             </div>
             {analysis.badges.map((badge) => (
               <span
-                key={badge}
+                key={badge.name}
                 className="bg-seed-100 text-seed-700 text-xs font-bold px-3 py-1 rounded-full"
               >
-                🏅 {badge}
+                🏅 {badge.name}{badge.level > 1 ? ` Lv.${badge.level}` : ""}
               </span>
             ))}
           </div>
@@ -324,11 +324,13 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
                   <div className="flex flex-wrap gap-2">
                     {analysis.badges.map((badge) => (
                       <div
-                        key={badge}
+                        key={badge.name}
                         className="bg-seed-50 border border-seed-200 rounded-2xl px-4 py-2 text-center"
                       >
                         <div className="text-xl">🏅</div>
-                        <div className="text-xs font-bold text-seed-700 mt-1">{badge}</div>
+                        <div className="text-xs font-bold text-seed-700 mt-1">
+                          {badge.name}{badge.level > 1 ? ` Lv.${badge.level}` : ""}
+                        </div>
                       </div>
                     ))}
                   </div>
