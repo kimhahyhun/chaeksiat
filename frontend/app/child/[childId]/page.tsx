@@ -101,16 +101,64 @@ const JUNGLE_MISSIONS = [
     check: (total: number) => total >= 10,
   },
   {
-    id: 8, emoji: "🏔️", name: "정상 정복",
+    id: 8, emoji: "🕳️", name: "신비한 동굴",
+    desc: "7일 연속 읽기",
+    badge: "동굴 탐험가",
+    check: (_total: number, _dist: Record<string, number>, streak: number) => streak >= 7,
+  },
+  {
+    id: 9, emoji: "🌉", name: "출렁다리 건너기",
+    desc: "책 15권 읽기",
+    badge: "출렁다리 정복자",
+    check: (total: number) => total >= 15,
+  },
+  {
+    id: 10, emoji: "🦜", name: "앵무새 마을",
+    desc: "4개 분야 이상 읽기",
+    badge: "다재다능 독서가",
+    check: (_total: number, dist: Record<string, number>) => Object.keys(dist).length >= 4,
+  },
+  {
+    id: 11, emoji: "🏔️", name: "정상 정복",
     desc: "책 20권 읽기",
     badge: "정글 마스터",
     check: (total: number) => total >= 20,
   },
   {
-    id: 9, emoji: "⭐", name: "전설 달성",
+    id: 12, emoji: "🏕️", name: "별빛 야영",
+    desc: "책 30권 읽기",
+    badge: "야영 전문가",
+    check: (total: number) => total >= 30,
+  },
+  {
+    id: 13, emoji: "🌈", name: "무지개 다리",
+    desc: "5개 분야 이상 읽기",
+    badge: "무지개 독서가",
+    check: (_total: number, dist: Record<string, number>) => Object.keys(dist).length >= 5,
+  },
+  {
+    id: 14, emoji: "💦", name: "폭포의 전설",
+    desc: "책 40권 읽기",
+    badge: "폭포 정복자",
+    check: (total: number) => total >= 40,
+  },
+  {
+    id: 15, emoji: "⭐", name: "전설 달성",
     desc: "책 50권 읽기",
     badge: "전설의 탐험가",
     check: (total: number) => total >= 50,
+  },
+  {
+    id: 16, emoji: "👑", name: "황금 정글",
+    desc: "책 75권 읽기",
+    badge: "황금 탐험가",
+    check: (total: number) => total >= 75,
+  },
+  {
+    id: 17, emoji: "🏆", name: "정글의 왕",
+    desc: "책 100권 읽기",
+    badge: "정글의 왕",
+    check: (total: number) => total >= 100,
   },
 ];
 
@@ -535,7 +583,7 @@ export default function ChildDashboard({ params }: { params: { childId: string }
                   </button>
                 )}
               </div>
-              <p className="text-sm text-gray-400 mb-5">미션을 달성하면 뱃지가 열려요!</p>
+              <p className="text-sm text-gray-400 mb-5">미션을 하나씩 달성하며 정글을 탐험해봐요!</p>
 
               {visibleResults.length === 0 ? (
                 <div className="text-center py-8 text-amber-500 font-bold">
