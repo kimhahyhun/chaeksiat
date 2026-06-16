@@ -135,6 +135,8 @@ export default function ChildDashboard({ params }: { params: { childId: string }
   const [librarianBooks, setLibrarianBooks] = useState<LibrarianBook[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [showBookshelf, setShowBookshelf] = useState(false);
+
   // 책 추가 폼
   const [showAddBook, setShowAddBook] = useState(false);
   const [isbnInput, setIsbnInput] = useState("");
@@ -274,35 +276,50 @@ export default function ChildDashboard({ params }: { params: { childId: string }
 
         {/* 나의 책장 */}
         <div className="bg-white rounded-3xl shadow-lg p-5">
-          <h3 className="text-lg font-black text-gray-800 mb-1">📚 나의 책장</h3>
-          <p className="text-sm text-gray-400 mb-4">지금까지 읽은 책 {records.length}권이에요!</p>
-          {records.length === 0 ? (
-            <div className="text-center py-10 text-gray-300">
-              <div className="text-4xl mb-2">📭</div>
-              <p className="text-sm">아직 읽은 책이 없어요</p>
+          <button
+            onClick={() => setShowBookshelf((v) => !v)}
+            className="w-full flex items-center justify-between"
+          >
+            <div className="text-left">
+              <h3 className="text-lg font-black text-gray-800">📚 나의 책장</h3>
+              <p className="text-sm text-gray-400 mt-0.5">지금까지 읽은 책 {records.length}권이에요!</p>
             </div>
-          ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-              {records.map((r) => (
-                <div key={r.id} className="text-center">
-                  <div className="w-full aspect-[3/4] rounded-xl overflow-hidden shadow-md bg-gray-100 mb-1.5">
-                    {r.book.cover_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={r.book.cover_url}
-                        alt={r.book.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl">📖</div>
-                    )}
-                  </div>
-                  <p className="text-xs font-bold text-gray-700 line-clamp-2 leading-tight">{r.book.title}</p>
-                  {r.rating && (
-                    <p className="text-xs text-yellow-500 mt-0.5">{"⭐".repeat(Math.round(r.rating))}</p>
-                  )}
+            <span className={`text-gray-400 text-xl transition-transform ${showBookshelf ? "rotate-180" : ""}`}>
+              ⌄
+            </span>
+          </button>
+
+          {showBookshelf && (
+            <div className="mt-4">
+              {records.length === 0 ? (
+                <div className="text-center py-10 text-gray-300">
+                  <div className="text-4xl mb-2">📭</div>
+                  <p className="text-sm">아직 읽은 책이 없어요</p>
                 </div>
-              ))}
+              ) : (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                  {records.map((r) => (
+                    <div key={r.id} className="text-center">
+                      <div className="w-full aspect-[3/4] rounded-xl overflow-hidden shadow-md bg-gray-100 mb-1.5">
+                        {r.book.cover_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={r.book.cover_url}
+                            alt={r.book.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-2xl">📖</div>
+                        )}
+                      </div>
+                      <p className="text-xs font-bold text-gray-700 line-clamp-2 leading-tight">{r.book.title}</p>
+                      {r.rating && (
+                        <p className="text-xs text-yellow-500 mt-0.5">{"⭐".repeat(Math.round(r.rating))}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
