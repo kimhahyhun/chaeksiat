@@ -234,6 +234,14 @@ export default function ChildDashboard({ params }: { params: { childId: string }
           </div>
         </div>
 
+        {/* 책 추가 버튼 */}
+        <Link
+          href={`/parent/${id}`}
+          className="block w-full bg-green-500 text-white font-black text-lg py-4 rounded-2xl text-center shadow-lg hover:bg-green-600 active:scale-95 transition-all"
+        >
+          📖 읽은 책 추가하기
+        </Link>
+
         {/* 지식나무 — 책 열매 키우기 */}
         <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
           <div className="px-5 pt-5 pb-2">
@@ -642,14 +650,6 @@ export default function ChildDashboard({ params }: { params: { childId: string }
             </div>
           );
         })()}
-
-        {/* 책 추가 버튼 */}
-        <Link
-          href={`/parent/${id}`}
-          className="block w-full bg-green-500 text-white font-black text-lg py-4 rounded-2xl text-center shadow-lg hover:bg-green-600 active:scale-95 transition-all"
-        >
-          📖 읽은 책 추가하기
-        </Link>
 
       </div>
     </main>
