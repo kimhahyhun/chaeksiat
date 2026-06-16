@@ -146,6 +146,19 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
     return months;
   })();
 
+  // 편독 경고: 최다 분야가 전체의 60% 이상이면 경고
+  const imbalanceWarning = (() => {
+    if (!analysis || analysis.total_books < 3) return null;
+    const entries = Object.entries(analysis.category_distribution);
+    if (entries.length === 0) return null;
+    const [topCat, topCount] = entries.reduce((a, b) => (b[1] > a[1] ? b : a));
+    const ratio = topCount / analysis.total_books;
+    if (ratio >= 0.6) {
+      return { category: topCat, percent: Math.round(ratio * 100) };
+    }
+    return null;
+  })();
+
   return (
     <main className="min-h-screen bg-seed-50">
       {/* 헤더 */}
@@ -340,6 +353,19 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
                   <div className="text-sm font-bold text-seed-600 mt-1">{analysis.reading_level} 단계</div>
                 </div>
               </div>
+
+              {/* 편독 경고 */}
+              {imbalanceWarning && (
+                <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 shadow-sm">
+                  <p className="text-sm font-bold text-amber-700 flex items-center gap-1.5">
+                    ⚠️ 편독 주의
+                  </p>
+                  <p className="text-sm text-amber-700 mt-1">
+                    전체 독서 중 <b>{imbalanceWarning.category}</b> 분야가 <b>{imbalanceWarning.percent}%</b>를 차지하고 있어요.
+                    다른 분야 책도 함께 읽어보면 더 균형 잡힌 독서가 될 거예요!
+                  </p>
+                </div>
+              )}
 
               {/* 좋아하는 분야 */}
               {analysis.favorite_category && (
