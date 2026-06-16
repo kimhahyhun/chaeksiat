@@ -135,6 +135,13 @@ export default function ChildDashboard({ params }: { params: { childId: string }
   const [librarianBooks, setLibrarianBooks] = useState<LibrarianBook[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // 책 추가 폼
+  const [showAddBook, setShowAddBook] = useState(false);
+  const [isbnInput, setIsbnInput] = useState("");
+  const [ratingInput, setRatingInput] = useState(5);
+  const [addingBook, setAddingBook] = useState(false);
+  const [addError, setAddError] = useState("");
+
   useEffect(() => {
     Promise.all([
       childrenApi.get(id),
@@ -149,6 +156,29 @@ export default function ChildDashboard({ params }: { params: { childId: string }
       analysisApi.librarianBooks(Math.max(age, 1)).then(setLibrarianBooks).catch(() => {});
     }).finally(() => setLoading(false));
   }, [id]);
+
+  async function handleAddBook(e: React.FormEvent) {
+    e.preventDefault();
+    setAddingBook(true);
+    setAddError("");
+    try {
+      const record = await booksApi.addRecord(id, {
+        isbn13: isbnInput.trim(),
+        read_at: new Date().toISOString().split("T")[0],
+        rating: ratingInput,
+      });
+      setRecords((prev) => [record, ...prev]);
+      const newAnalysis = await analysisApi.analyze(id);
+      setAnalysis(newAnalysis);
+      setShowAddBook(false);
+      setIsbnInput("");
+      setRatingInput(5);
+    } catch (err: unknown) {
+      setAddError(err instanceof Error ? err.message : "오류가 발생했어요");
+    } finally {
+      setAddingBook(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -235,12 +265,12 @@ export default function ChildDashboard({ params }: { params: { childId: string }
         </div>
 
         {/* 책 추가 버튼 */}
-        <Link
-          href={`/parent/${id}`}
+        <button
+          onClick={() => setShowAddBook(true)}
           className="block w-full bg-green-500 text-white font-black text-lg py-4 rounded-2xl text-center shadow-lg hover:bg-green-600 active:scale-95 transition-all"
         >
           📖 읽은 책 추가하기
-        </Link>
+        </button>
 
         {/* 지식나무 — 책 열매 키우기 */}
         <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
@@ -652,6 +682,64 @@ export default function ChildDashboard({ params }: { params: { childId: string }
         })()}
 
       </div>
+
+      {/* 책 추가 모달 */}
+      {showAddBook && (
+        <div className="fixed inset-0 bg-black/40 flex items-end justify-center z-50">
+          <div className="bg-white rounded-t-3xl p-6 w-full max-w-lg shadow-xl">
+            <h3 className="text-xl font-black text-gray-800 mb-4">읽은 책 추가</h3>
+            <form onSubmit={handleAddBook} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-600 mb-1">
+                  ISBN-13 (책 뒷면 바코드 번호)
+                </label>
+                <input
+                  required
+                  pattern="[0-9]{13}"
+                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-2 focus:outline-none focus:border-seed-400 text-lg tracking-widest"
+                  value={isbnInput}
+                  onChange={(e) => setIsbnInput(e.target.value)}
+                  placeholder="9788934972464"
+                  inputMode="numeric"
+                />
+                <p className="text-xs text-gray-400 mt-1">13자리 숫자를 입력하세요</p>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-600 mb-2">별점</label>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setRatingInput(n)}
+                      className={`text-2xl transition-transform ${n <= ratingInput ? "scale-110" : "opacity-30"}`}
+                    >
+                      ⭐
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {addError && <p className="text-red-500 text-sm">{addError}</p>}
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => { setShowAddBook(false); setAddError(""); }}
+                  className="flex-1 py-3 rounded-xl border-2 border-gray-200 font-semibold text-gray-600"
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  disabled={addingBook}
+                  className="flex-1 py-3 rounded-xl bg-seed-500 text-white font-bold hover:bg-seed-600 disabled:opacity-50"
+                >
+                  {addingBook ? "조회 중..." : "추가하기"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
