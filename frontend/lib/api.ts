@@ -40,6 +40,7 @@ export interface ReadingRecord {
   isbn13: string;
   read_at: string;
   rating: number | null;
+  note: string | null;
   book: Book;
 }
 
@@ -84,7 +85,7 @@ export const booksApi = {
   search: (isbn13: string) => req<Book>(`/books/search?isbn13=${isbn13}`),
   addRecord: (
     childId: number,
-    data: { isbn13: string; read_at: string; rating?: number }
+    data: { isbn13: string; read_at: string; rating?: number; note?: string }
   ) =>
     req<ReadingRecord>(`/children/${childId}/records`, {
       method: "POST",
@@ -92,6 +93,15 @@ export const booksApi = {
     }),
   listRecords: (childId: number) =>
     req<ReadingRecord[]>(`/children/${childId}/records`),
+  updateRecord: (
+    childId: number,
+    recordId: number,
+    data: Partial<{ note: string; rating: number }>
+  ) =>
+    req<ReadingRecord>(`/children/${childId}/records/${recordId}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
   deleteRecord: (childId: number, recordId: number) =>
     req<void>(`/children/${childId}/records/${recordId}`, { method: "DELETE" }),
 };

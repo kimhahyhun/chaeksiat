@@ -65,6 +65,7 @@ class ReadingRecord(Base):
     isbn13: Mapped[str] = mapped_column(String(20), ForeignKey("books.isbn13"))
     read_at: Mapped[date] = mapped_column(Date, default=date.today)
     rating: Mapped[float | None] = mapped_column(Float)
+    note: Mapped[str | None] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     child: Mapped["Child"] = relationship(back_populates="records")

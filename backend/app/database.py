@@ -32,3 +32,10 @@ async def init_db():
             )
         except Exception:
             pass
+        # note 컬럼 없으면 추가 (기존 DB 호환)
+        try:
+            await conn.exec_driver_sql(
+                "ALTER TABLE reading_records ADD COLUMN note VARCHAR(500)"
+            )
+        except Exception:
+            pass

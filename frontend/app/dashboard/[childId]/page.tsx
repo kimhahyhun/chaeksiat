@@ -32,8 +32,14 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
   const [showAddBook, setShowAddBook] = useState(false);
   const [isbnInput, setIsbnInput] = useState("");
   const [ratingInput, setRatingInput] = useState(5);
+  const [noteInput, setNoteInput] = useState("");
   const [addingBook, setAddingBook] = useState(false);
   const [addError, setAddError] = useState("");
+
+  // 메모 수정
+  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
+  const [editNoteText, setEditNoteText] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -78,6 +84,7 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
         isbn13: isbnInput.trim(),
         read_at: new Date().toISOString().split("T")[0],
         rating: ratingInput,
+        note: noteInput.trim() || undefined,
       });
       setRecords((prev) => [record, ...prev]);
       const newAnalysis = await analysisApi.analyze(id);
@@ -86,10 +93,30 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
       setShowAddBook(false);
       setIsbnInput("");
       setRatingInput(5);
+      setNoteInput("");
     } catch (err: unknown) {
       setAddError(err instanceof Error ? err.message : "오류가 발생했어요");
     } finally {
       setAddingBook(false);
+    }
+  }
+
+  function openNoteEdit(record: ReadingRecord) {
+    setEditingNoteId(record.id);
+    setEditNoteText(record.note ?? "");
+  }
+
+  async function handleSaveNote() {
+    if (editingNoteId === null) return;
+    setSavingNote(true);
+    try {
+      const updated = await booksApi.updateRecord(id, editingNoteId, { note: editNoteText.trim() });
+      setRecords((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+      setEditingNoteId(null);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "메모 저장 중 오류가 발생했어요");
+    } finally {
+      setSavingNote(false);
     }
   }
 
@@ -325,6 +352,50 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
                             <span className="text-xs text-yellow-500">{"⭐".repeat(Math.round(r.rating))}</span>
                           )}
                         </div>
+
+                        {/* 메모 */}
+                        {editingNoteId === r.id ? (
+                          <div className="mt-2">
+                            <textarea
+                              autoFocus
+                              value={editNoteText}
+                              onChange={(e) => setEditNoteText(e.target.value)}
+                              placeholder="이 책에 대한 메모를 남겨보세요"
+                              maxLength={500}
+                              rows={2}
+                              className="w-full text-sm border-2 border-seed-200 rounded-xl px-3 py-2 focus:outline-none focus:border-seed-400 resize-none"
+                            />
+                            <div className="flex gap-2 mt-1.5">
+                              <button
+                                onClick={() => setEditingNoteId(null)}
+                                className="text-xs text-gray-400 font-semibold px-2 py-1"
+                              >
+                                취소
+                              </button>
+                              <button
+                                onClick={handleSaveNote}
+                                disabled={savingNote}
+                                className="text-xs text-white font-bold bg-seed-500 hover:bg-seed-600 rounded-lg px-3 py-1 disabled:opacity-50"
+                              >
+                                {savingNote ? "저장 중..." : "저장"}
+                              </button>
+                            </div>
+                          </div>
+                        ) : r.note ? (
+                          <button
+                            onClick={() => openNoteEdit(r)}
+                            className="block w-full text-left mt-2 text-sm text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-xl px-3 py-2"
+                          >
+                            💬 {r.note}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => openNoteEdit(r)}
+                            className="text-xs text-seed-500 font-semibold mt-2 hover:underline"
+                          >
+                            + 메모 남기기
+                          </button>
+                        )}
                       </div>
                       <button
                         onClick={() => handleDeleteRecord(r.id)}
@@ -609,6 +680,19 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
                     </button>
                   ))}
                 </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-600 mb-1">
+                  메모 (선택)
+                </label>
+                <textarea
+                  value={noteInput}
+                  onChange={(e) => setNoteInput(e.target.value)}
+                  placeholder="이 책에 대한 메모를 남겨보세요"
+                  maxLength={500}
+                  rows={2}
+                  className="w-full text-sm border-2 border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-seed-400 resize-none"
+                />
               </div>
               {addError && <p className="text-red-500 text-sm">{addError}</p>}
               <div className="flex gap-3 pt-2">
