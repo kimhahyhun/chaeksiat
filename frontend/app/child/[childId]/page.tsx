@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { childrenApi, booksApi, analysisApi } from "@/lib/api";
-import type { Child, ReadingAnalysis, ReadingRecord, RecommendedBook, LibrarianBook } from "@/lib/api";
+import { childrenApi, booksApi, analysisApi, goalsApi } from "@/lib/api";
+import type { Child, ReadingAnalysis, ReadingRecord, RecommendedBook, LibrarianBook, ReadingGoal } from "@/lib/api";
 import { AVATARS, LEVEL_TREE, KDC_COLORS } from "@/lib/utils";
 
 // 열매 위치 — 큰 나무(260px+) 수관 중심부 기준
@@ -181,6 +181,7 @@ export default function ChildDashboard({ params }: { params: { childId: string }
   const [records, setRecords] = useState<ReadingRecord[]>([]);
   const [popularBooks, setPopularBooks] = useState<RecommendedBook[]>([]);
   const [librarianBooks, setLibrarianBooks] = useState<LibrarianBook[]>([]);
+  const [goal, setGoal] = useState<ReadingGoal | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [showBookshelf, setShowBookshelf] = useState(false);
@@ -207,6 +208,7 @@ export default function ChildDashboard({ params }: { params: { childId: string }
       analysisApi.popularBooks(Math.max(age, 1)).then(setPopularBooks).catch(() => {});
       analysisApi.librarianBooks(Math.max(age, 1)).then(setLibrarianBooks).catch(() => {});
     }).finally(() => setLoading(false));
+    goalsApi.get(id).then(setGoal).catch(() => {});
   }, [id]);
 
   async function handleAddBook(e: React.FormEvent) {
@@ -222,6 +224,7 @@ export default function ChildDashboard({ params }: { params: { childId: string }
       setRecords((prev) => [record, ...prev]);
       const newAnalysis = await analysisApi.analyze(id);
       setAnalysis(newAnalysis);
+      goalsApi.get(id).then(setGoal).catch(() => {});
       setShowAddBook(false);
       setIsbnInput("");
       setRatingInput(5);
@@ -324,6 +327,35 @@ export default function ChildDashboard({ params }: { params: { childId: string }
         >
           📖 읽은 책 추가하기
         </button>
+
+        {/* 독서 목표 */}
+        {goal && (
+          <div className="bg-white rounded-3xl shadow-lg p-5">
+            <h3 className="text-lg font-black text-gray-800 mb-1">
+              🎯 {goal.period === "weekly" ? "이번 주" : "이번 달"} 목표
+            </h3>
+            <div className="flex items-center gap-3 mt-3">
+              <div className="flex-1 h-4 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-green-400 to-green-500 rounded-full transition-all duration-700"
+                  style={{ width: `${Math.min((goal.current_count / goal.target_count) * 100, 100)}%` }}
+                />
+              </div>
+              <span className="text-lg font-black text-green-600 flex-shrink-0">
+                {goal.current_count} / {goal.target_count}권
+              </span>
+            </div>
+            <p className="text-sm mt-2 font-bold">
+              {goal.current_count >= goal.target_count ? (
+                <span className="text-amber-500">🎉 목표를 달성했어요! 최고예요!</span>
+              ) : (
+                <span className="text-green-600">
+                  {goal.target_count - goal.current_count}권만 더 읽으면 목표 달성! 💪
+                </span>
+              )}
+            </p>
+          </div>
+        )}
 
         {/* 나의 책장 */}
         <div className="bg-white rounded-3xl shadow-lg p-5">

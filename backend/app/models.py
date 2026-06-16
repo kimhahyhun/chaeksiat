@@ -47,6 +47,16 @@ class LibrarianBook(Base):
     cover_url: Mapped[str | None] = mapped_column(String(500))
 
 
+class ReadingGoal(Base):
+    __tablename__ = "reading_goals"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    child_id: Mapped[int] = mapped_column(Integer, ForeignKey("children.id"))
+    period: Mapped[str] = mapped_column(String(10))  # "weekly" | "monthly"
+    target_count: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
 class ReadingRecord(Base):
     __tablename__ = "reading_records"
 

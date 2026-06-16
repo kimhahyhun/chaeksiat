@@ -1,4 +1,5 @@
 from datetime import datetime, date
+from typing import Literal
 from pydantic import BaseModel, Field
 
 
@@ -78,6 +79,22 @@ class LibrarianBookResponse(BaseModel):
     subject: str | None = None
     target_age: str
     cover_url: str | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class GoalCreate(BaseModel):
+    period: Literal["weekly", "monthly"]
+    target_count: int = Field(..., ge=1, le=100)
+
+
+class GoalResponse(BaseModel):
+    id: int
+    period: str
+    target_count: int
+    current_count: int
+    period_start: date
+    period_end: date
 
     model_config = {"from_attributes": True}
 

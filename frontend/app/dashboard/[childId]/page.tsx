@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { childrenApi, booksApi, analysisApi } from "@/lib/api";
-import type { Child, ReadingRecord, ReadingAnalysis, RecommendedBook } from "@/lib/api";
+import { childrenApi, booksApi, analysisApi, goalsApi } from "@/lib/api";
+import type { Child, ReadingRecord, ReadingAnalysis, RecommendedBook, ReadingGoal } from "@/lib/api";
 import { AVATARS, KDC_COLORS, LEVEL_TREE, getAge, formatDate } from "@/lib/utils";
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip } from "recharts";
 
@@ -17,9 +17,16 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
   const [records, setRecords] = useState<ReadingRecord[]>([]);
   const [analysis, setAnalysis] = useState<ReadingAnalysis | null>(null);
   const [recommendations, setRecommendations] = useState<RecommendedBook[]>([]);
+  const [goal, setGoal] = useState<ReadingGoal | null>(null);
   const [tab, setTab] = useState<Tab>("books");
   const [loading, setLoading] = useState(true);
   const [loadingRec, setLoadingRec] = useState(false);
+
+  // 목표 설정 폼
+  const [showGoalForm, setShowGoalForm] = useState(false);
+  const [goalPeriod, setGoalPeriod] = useState<"weekly" | "monthly">("monthly");
+  const [goalTarget, setGoalTarget] = useState(5);
+  const [savingGoal, setSavingGoal] = useState(false);
 
   // 책 추가 폼
   const [showAddBook, setShowAddBook] = useState(false);
@@ -38,7 +45,22 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
       setRecords(r);
       setAnalysis(a);
     }).finally(() => setLoading(false));
+    goalsApi.get(id).then(setGoal).catch(() => {});
   }, [id]);
+
+  async function handleSetGoal(e: React.FormEvent) {
+    e.preventDefault();
+    setSavingGoal(true);
+    try {
+      const newGoal = await goalsApi.set(id, { period: goalPeriod, target_count: goalTarget });
+      setGoal(newGoal);
+      setShowGoalForm(false);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "목표 설정 중 오류가 발생했어요");
+    } finally {
+      setSavingGoal(false);
+    }
+  }
 
   useEffect(() => {
     if (tab === "recommend" && recommendations.length === 0) {
@@ -60,6 +82,7 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
       setRecords((prev) => [record, ...prev]);
       const newAnalysis = await analysisApi.analyze(id);
       setAnalysis(newAnalysis);
+      goalsApi.get(id).then(setGoal).catch(() => {});
       setShowAddBook(false);
       setIsbnInput("");
       setRatingInput(5);
@@ -148,6 +171,48 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
           </div>
         </div>
       )}
+
+      {/* 독서 목표 */}
+      <div className="max-w-2xl mx-auto px-4 mt-4">
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
+          {goal ? (
+            <>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold text-gray-700">
+                  🎯 {goal.period === "weekly" ? "이번 주" : "이번 달"} 목표
+                </span>
+                <button
+                  onClick={() => { setGoalPeriod(goal.period); setGoalTarget(goal.target_count); setShowGoalForm(true); }}
+                  className="text-xs text-seed-600 font-semibold hover:underline"
+                >
+                  수정
+                </button>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-seed-500 rounded-full transition-all"
+                    style={{ width: `${Math.min((goal.current_count / goal.target_count) * 100, 100)}%` }}
+                  />
+                </div>
+                <span className="text-sm font-bold text-gray-700 flex-shrink-0">
+                  {goal.current_count} / {goal.target_count}권
+                </span>
+              </div>
+              {goal.current_count >= goal.target_count && (
+                <p className="text-xs text-seed-600 font-bold mt-2">🎉 목표를 달성했어요!</p>
+              )}
+            </>
+          ) : (
+            <button
+              onClick={() => setShowGoalForm(true)}
+              className="w-full text-sm font-bold text-seed-600 py-1"
+            >
+              🎯 독서 목표 설정하기
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* 탭 */}
       <div className="max-w-2xl mx-auto px-4">
@@ -383,6 +448,72 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
           )}
         </div>
       </div>
+
+      {/* 목표 설정 모달 */}
+      {showGoalForm && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-xl">
+            <h3 className="text-xl font-black text-gray-800 mb-4">🎯 독서 목표 설정</h3>
+            <form onSubmit={handleSetGoal} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-600 mb-2">기간</label>
+                <div className="flex gap-2">
+                  {([
+                    { value: "weekly", label: "주간" },
+                    { value: "monthly", label: "월간" },
+                  ] as const).map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setGoalPeriod(opt.value)}
+                      className={`flex-1 py-2 rounded-xl font-semibold text-sm border-2 transition-all ${
+                        goalPeriod === opt.value
+                          ? "border-seed-400 bg-seed-50 text-seed-700"
+                          : "border-gray-200 text-gray-500"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-600 mb-1">
+                  목표 권수
+                </label>
+                <input
+                  type="number"
+                  required
+                  min={1}
+                  max={100}
+                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-2 focus:outline-none focus:border-seed-400 text-lg"
+                  value={goalTarget}
+                  onChange={(e) => setGoalTarget(Number(e.target.value))}
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  {goalPeriod === "weekly" ? "이번 주" : "이번 달"} 안에 읽을 책 권수
+                </p>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowGoalForm(false)}
+                  className="flex-1 py-3 rounded-xl border-2 border-gray-200 font-semibold text-gray-600"
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingGoal}
+                  className="flex-1 py-3 rounded-xl bg-seed-500 text-white font-bold hover:bg-seed-600 disabled:opacity-50"
+                >
+                  {savingGoal ? "저장 중..." : "설정하기"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* 책 추가 모달 */}
       {showAddBook && (
