@@ -5,7 +5,7 @@ import Link from "next/link";
 import { childrenApi, booksApi, analysisApi, goalsApi } from "@/lib/api";
 import type { Child, ReadingRecord, ReadingAnalysis, RecommendedBook, ReadingGoal } from "@/lib/api";
 import { AVATARS, KDC_COLORS, LEVEL_TREE, getAge, formatDate } from "@/lib/utils";
-import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip } from "recharts";
+import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 type Tab = "books" | "analysis" | "recommend";
 
@@ -128,6 +128,23 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
         count,
       }))
     : [];
+
+  // 최근 6개월 월별 독서량 집계
+  const monthlyData = (() => {
+    const now = new Date();
+    const months: { key: string; label: string; count: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      months.push({ key, label: `${d.getMonth() + 1}월`, count: 0 });
+    }
+    for (const r of records) {
+      const key = r.read_at.slice(0, 7);
+      const m = months.find((m) => m.key === key);
+      if (m) m.count++;
+    }
+    return months;
+  })();
 
   return (
     <main className="min-h-screen bg-seed-50">
@@ -333,6 +350,20 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
                   </p>
                 </div>
               )}
+
+              {/* 월별 독서량 추이 */}
+              <div className="bg-white rounded-2xl p-4 shadow-sm">
+                <h3 className="font-bold text-gray-700 mb-3">월별 독서량 추이 (최근 6개월)</h3>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={monthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="label" tick={{ fontSize: 12, fill: "#6b7280" }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#6b7280" }} width={24} />
+                    <Tooltip formatter={(value) => [`${value}권`, "읽은 책"]} />
+                    <Bar dataKey="count" fill="#22c55e" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
 
               {/* 분야별 레이더 차트 */}
               {radarData.length > 0 && (
