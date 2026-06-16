@@ -200,8 +200,13 @@ export default function ChildDashboard({ params }: { params: { childId: string }
   const [ratingInput, setRatingInput] = useState(5);
   const [addingBook, setAddingBook] = useState(false);
   const [addError, setAddError] = useState("");
+  const [loadError, setLoadError] = useState("");
+  const [loadingPopular, setLoadingPopular] = useState(true);
+  const [loadingLibrarian, setLoadingLibrarian] = useState(true);
 
-  useEffect(() => {
+  function loadAll() {
+    setLoading(true);
+    setLoadError("");
     Promise.all([
       childrenApi.get(id),
       booksApi.listRecords(id),
@@ -211,10 +216,19 @@ export default function ChildDashboard({ params }: { params: { childId: string }
       setRecords(r);
       setAnalysis(a);
       const age = Math.min(new Date().getFullYear() - c.birth_year, 19);
-      analysisApi.popularBooks(Math.max(age, 1)).then(setPopularBooks).catch(() => {});
-      analysisApi.librarianBooks(Math.max(age, 1)).then(setLibrarianBooks).catch(() => {});
+      setLoadingPopular(true);
+      setLoadingLibrarian(true);
+      analysisApi.popularBooks(Math.max(age, 1)).then(setPopularBooks).catch(() => {}).finally(() => setLoadingPopular(false));
+      analysisApi.librarianBooks(Math.max(age, 1)).then(setLibrarianBooks).catch(() => {}).finally(() => setLoadingLibrarian(false));
+    }).catch((err: unknown) => {
+      setLoadError(err instanceof Error ? err.message : "데이터를 불러오지 못했어요");
     }).finally(() => setLoading(false));
     goalsApi.get(id).then(setGoal).catch(() => {});
+  }
+
+  useEffect(() => {
+    loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   async function handleAddBook(e: React.FormEvent) {
@@ -248,6 +262,22 @@ export default function ChildDashboard({ params }: { params: { childId: string }
           <div className="text-6xl animate-bounce">🌱</div>
           <p className="text-green-600 font-bold mt-3">책씨앗을 불러오는 중...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gradient-to-b from-green-50 to-blue-50 px-6 text-center">
+        <div className="text-5xl">😢</div>
+        <p className="text-gray-600 font-bold">{loadError}</p>
+        <button
+          onClick={loadAll}
+          className="bg-seed-500 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-seed-600"
+        >
+          다시 시도하기
+        </button>
+        <Link href="/" className="text-sm text-gray-400 hover:underline">홈으로 돌아가기</Link>
       </div>
     );
   }
@@ -504,10 +534,21 @@ export default function ChildDashboard({ params }: { params: { childId: string }
         </div>
 
         {/* ── 현재 가장 인기 있는 도서 ── */}
-        {popularBooks.length > 0 && (
+        {(loadingPopular || popularBooks.length > 0) && (
           <div className="bg-white rounded-3xl shadow-lg p-5">
             <h3 className="text-lg font-black text-gray-800 mb-1">🔥 현재 가장 인기 있는 도서</h3>
             <p className="text-sm text-gray-400 mb-4">지금 {ageGroupLabel} 도서관에서 제일 많이 빌리는 책이에요!</p>
+            {loadingPopular ? (
+              <div className="flex gap-3 overflow-x-hidden pb-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="flex-shrink-0 w-28">
+                    <div className="w-28 h-40 rounded-xl bg-gray-100 animate-pulse mb-2" />
+                    <div className="h-3 bg-gray-100 rounded animate-pulse mb-1" />
+                    <div className="h-3 bg-gray-100 rounded animate-pulse w-2/3" />
+                  </div>
+                ))}
+              </div>
+            ) : (
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
               {popularBooks.slice(0, 10).map((book, i) => (
                 <div
@@ -538,16 +579,27 @@ export default function ChildDashboard({ params }: { params: { childId: string }
                 </div>
               ))}
             </div>
+            )}
           </div>
         )}
 
         {/* ── 사서 선생님 추천 ── */}
-        {librarianBooks.length > 0 && (
+        {(loadingLibrarian || librarianBooks.length > 0) && (
           <div className="bg-white rounded-3xl shadow-lg p-5">
             <h3 className="text-lg font-black text-gray-800 mb-1">📚 사서 선생님 추천</h3>
             <p className="text-sm text-gray-400 mb-4">
               사서 선생님이 직접 고른 책이에요!
             </p>
+            {loadingLibrarian ? (
+              <div className="flex gap-3 overflow-x-hidden pb-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="flex-shrink-0 w-28">
+                    <div className="w-28 h-40 rounded-xl bg-amber-50 animate-pulse mb-2" />
+                    <div className="h-3 bg-gray-100 rounded animate-pulse" />
+                  </div>
+                ))}
+              </div>
+            ) : (
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
               {librarianBooks.map((book, i) => (
                 <div key={book.id} className="flex-shrink-0 w-28">
@@ -582,6 +634,7 @@ export default function ChildDashboard({ params }: { params: { childId: string }
                 </div>
               ))}
             </div>
+            )}
           </div>
         )}
 

@@ -41,7 +41,11 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
   const [editNoteText, setEditNoteText] = useState("");
   const [savingNote, setSavingNote] = useState(false);
 
-  useEffect(() => {
+  const [loadError, setLoadError] = useState("");
+
+  function loadAll() {
+    setLoading(true);
+    setLoadError("");
     Promise.all([
       childrenApi.get(id),
       booksApi.listRecords(id),
@@ -50,8 +54,15 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
       setChild(c);
       setRecords(r);
       setAnalysis(a);
+    }).catch((err: unknown) => {
+      setLoadError(err instanceof Error ? err.message : "데이터를 불러오지 못했어요");
     }).finally(() => setLoading(false));
     goalsApi.get(id).then(setGoal).catch(() => {});
+  }
+
+  useEffect(() => {
+    loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   async function handleSetGoal(e: React.FormEvent) {
@@ -136,6 +147,22 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
     return (
       <div className="min-h-screen flex items-center justify-center text-4xl">
         📚
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6 text-center">
+        <div className="text-5xl">😢</div>
+        <p className="text-gray-600 font-bold">{loadError}</p>
+        <button
+          onClick={loadAll}
+          className="bg-seed-500 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-seed-600"
+        >
+          다시 시도하기
+        </button>
+        <Link href="/" className="text-sm text-gray-400 hover:underline">홈으로 돌아가기</Link>
       </div>
     );
   }
