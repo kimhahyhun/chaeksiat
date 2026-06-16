@@ -25,8 +25,6 @@ const FRUIT_POSITIONS = [
   { top: "38%", left: "47%" },
 ];
 
-const FRUITS_PER_LEVEL = 5;
-
 // 분야별 단계 기준 (읽은 권수)
 const FIELD_LEVELS = [
   { min: 0,  label: "씨앗",   emoji: "🌰" },
@@ -175,10 +173,17 @@ export default function ChildDashboard({ params }: { params: { childId: string }
     childAge <= 10 ? "초등 저학년이" :
     "초등 고학년이";
 
-  // 현재 레벨에서 열매 몇 개인지
-  const fruitsOnTree = Math.min(totalBooks % FRUITS_PER_LEVEL || (totalBooks > 0 ? FRUITS_PER_LEVEL : 0), FRUIT_POSITIONS.length);
-  const progressToNext = ((totalBooks % FRUITS_PER_LEVEL) / FRUITS_PER_LEVEL) * 100;
-  const booksToNext = FRUITS_PER_LEVEL - (totalBooks % FRUITS_PER_LEVEL);
+  // 완성된 나무 개수(=현재 레벨 단계) + 이번 나무 진행 상황
+  const completedTrees = analysis?.level_score ?? 0;
+  const levelThresholds = [0, 3, 10, 20, 35, 50, 75, 100];
+  const curLevelStart = levelThresholds[completedTrees] ?? 0;
+  const nextLevelStart = levelThresholds[completedTrees + 1];
+  const isMaxLevel = nextLevelStart === undefined;
+  const booksIntoLevel = totalBooks - curLevelStart;
+  const levelSpan = isMaxLevel ? FRUIT_POSITIONS.length : nextLevelStart - curLevelStart;
+  const fruitsOnTree = Math.min(booksIntoLevel, FRUIT_POSITIONS.length, levelSpan);
+  const progressToNext = isMaxLevel ? 100 : (booksIntoLevel / levelSpan) * 100;
+  const booksToNext = isMaxLevel ? 0 : nextLevelStart - totalBooks;
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-sky-100 via-green-50 to-emerald-100">
@@ -238,6 +243,13 @@ export default function ChildDashboard({ params }: { params: { childId: string }
             <p className="text-sm text-gray-500 mt-0.5">
               책을 읽을수록 나무에 열매가 열려요!
             </p>
+            {completedTrees > 0 && (
+              <div className="mt-2 bg-seed-50 rounded-xl px-3 py-2 flex items-center gap-2">
+                <span className="text-xs font-bold text-seed-700">나의 작은 숲</span>
+                <span className="text-lg leading-none">{"🌳".repeat(Math.min(completedTrees, 10))}</span>
+                <span className="text-xs text-seed-600 font-semibold">{completedTrees}그루 완성!</span>
+              </div>
+            )}
           </div>
 
           {/* 나무 영역 */}
@@ -282,25 +294,25 @@ export default function ChildDashboard({ params }: { params: { childId: string }
             </div>
           </div>
 
-          {/* 다음 열매까지 진행바 */}
+          {/* 다음 레벨까지 진행바 */}
           <div className="px-5 pb-5 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="font-semibold text-gray-600">
-                🍎 열매 {fruitsOnTree} / {FRUITS_PER_LEVEL}개
+                🍎 열매 {fruitsOnTree}개
               </span>
-              {totalBooks > 0 && booksToNext < FRUITS_PER_LEVEL ? (
+              {!isMaxLevel ? (
                 <span className="text-green-600 font-bold">
-                  책 {booksToNext}권 더 읽으면 레벨업! ✨
+                  책 {booksToNext}권 더 읽으면 새 나무로 레벨업! ✨
                 </span>
               ) : (
-                <span className="text-gray-400 text-xs">책을 읽고 열매를 키워봐요</span>
+                <span className="text-amber-500 font-bold">🏆 최고 레벨이에요!</span>
               )}
             </div>
             <div className="w-full h-4 bg-gray-100 rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-700"
                 style={{
-                  width: `${totalBooks === 0 ? 0 : progressToNext || 100}%`,
+                  width: `${Math.min(progressToNext, 100)}%`,
                   background: "linear-gradient(90deg, #4ade80, #22c55e)",
                 }}
               />
