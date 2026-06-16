@@ -37,7 +37,10 @@ async def add_reading_record(
     if not book:
         info = await fetch_book_detail(body.isbn13)
         if not info:
-            raise HTTPException(status_code=404, detail="ISBN에 해당하는 도서를 찾을 수 없어요")
+            raise HTTPException(
+                status_code=404,
+                detail="이 ISBN으로는 책을 찾을 수 없어요. 13자리 숫자를 다시 확인해주세요.",
+            )
         book = Book(**info)
         db.add(book)
         await db.flush()
