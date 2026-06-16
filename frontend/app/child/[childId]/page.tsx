@@ -6,6 +6,12 @@ import { childrenApi, booksApi, analysisApi, goalsApi } from "@/lib/api";
 import type { Child, ReadingAnalysis, ReadingRecord, RecommendedBook, LibrarianBook, ReadingGoal } from "@/lib/api";
 import { AVATARS, LEVEL_TREE, KDC_COLORS } from "@/lib/utils";
 
+function ratingToEmoji(rating: number): string {
+  if (rating >= 5) return "😍 재밌어요";
+  if (rating >= 3) return "😐 그냥그래요";
+  return "😢 어려워요";
+}
+
 // 열매 위치 — 큰 나무(260px+) 수관 중심부 기준
 const FRUIT_POSITIONS = [
   { top: "42%", left: "50%" },
@@ -397,7 +403,7 @@ export default function ChildDashboard({ params }: { params: { childId: string }
                       </div>
                       <p className="text-xs font-bold text-gray-700 line-clamp-2 leading-tight">{r.book.title}</p>
                       {r.rating && (
-                        <p className="text-xs text-yellow-500 mt-0.5">{"⭐".repeat(Math.round(r.rating))}</p>
+                        <p className="text-sm mt-0.5">{ratingToEmoji(r.rating)}</p>
                       )}
                     </div>
                   ))}
@@ -921,16 +927,25 @@ export default function ChildDashboard({ params }: { params: { childId: string }
                 <p className="text-xs text-gray-400 mt-1">13자리 숫자를 입력하세요</p>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-600 mb-2">별점</label>
-                <div className="flex gap-2">
-                  {[1, 2, 3, 4, 5].map((n) => (
+                <label className="block text-sm font-semibold text-gray-600 mb-2">이 책 어땠어요?</label>
+                <div className="flex gap-3">
+                  {[
+                    { value: 5, emoji: "😍", label: "재밌어요" },
+                    { value: 3, emoji: "😐", label: "그냥그래요" },
+                    { value: 1, emoji: "😢", label: "어려워요" },
+                  ].map((opt) => (
                     <button
-                      key={n}
+                      key={opt.value}
                       type="button"
-                      onClick={() => setRatingInput(n)}
-                      className={`text-2xl transition-transform ${n <= ratingInput ? "scale-110" : "opacity-30"}`}
+                      onClick={() => setRatingInput(opt.value)}
+                      className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-2xl border-2 transition-all ${
+                        ratingInput === opt.value
+                          ? "border-seed-400 bg-seed-50 scale-105"
+                          : "border-gray-200 opacity-50"
+                      }`}
                     >
-                      ⭐
+                      <span className="text-3xl">{opt.emoji}</span>
+                      <span className="text-xs font-bold text-gray-600">{opt.label}</span>
                     </button>
                   ))}
                 </div>
