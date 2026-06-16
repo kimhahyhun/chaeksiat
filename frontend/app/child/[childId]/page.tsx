@@ -6,23 +6,23 @@ import { childrenApi, booksApi, analysisApi } from "@/lib/api";
 import type { Child, ReadingAnalysis, ReadingRecord, RecommendedBook, LibrarianBook } from "@/lib/api";
 import { AVATARS, LEVEL_TREE, KDC_COLORS } from "@/lib/utils";
 
-// 열매 위치 — 수관 중심부 기준 (나무 크기 200px, 컨테이너 280px)
+// 열매 위치 — 큰 나무(260px+) 수관 중심부 기준
 const FRUIT_POSITIONS = [
-  { top: "46%", left: "50%" },
-  { top: "38%", left: "41%" },
-  { top: "38%", left: "59%" },
-  { top: "54%", left: "37%" },
-  { top: "54%", left: "63%" },
-  { top: "32%", left: "49%" },
-  { top: "60%", left: "43%" },
-  { top: "60%", left: "57%" },
-  { top: "44%", left: "35%" },
-  { top: "44%", left: "65%" },
-  { top: "50%", left: "50%" },
-  { top: "36%", left: "45%" },
-  { top: "36%", left: "55%" },
-  { top: "56%", left: "50%" },
   { top: "42%", left: "50%" },
+  { top: "35%", left: "40%" },
+  { top: "35%", left: "60%" },
+  { top: "50%", left: "37%" },
+  { top: "50%", left: "63%" },
+  { top: "30%", left: "50%" },
+  { top: "55%", left: "43%" },
+  { top: "55%", left: "57%" },
+  { top: "40%", left: "34%" },
+  { top: "40%", left: "66%" },
+  { top: "46%", left: "50%" },
+  { top: "33%", left: "44%" },
+  { top: "33%", left: "56%" },
+  { top: "52%", left: "50%" },
+  { top: "38%", left: "47%" },
 ];
 
 const FRUITS_PER_LEVEL = 5;
@@ -202,11 +202,25 @@ export default function ChildDashboard({ params }: { params: { childId: string }
             <div className="text-6xl">{AVATARS[child.avatar] ?? "👶"}</div>
             <div className="flex-1">
               <h2 className="text-2xl font-black text-gray-800">{child.name}</h2>
-              <div
-                className="inline-block text-sm font-bold px-3 py-0.5 rounded-full mt-1"
-                style={{ background: tier.color + "33", color: tier.color }}
-              >
-                {LEVEL_TREE[level]} {level} (Lv.{analysis?.level_score ?? 0})
+              <div className="flex items-center gap-1.5 flex-wrap mt-1">
+                <div
+                  className="text-sm font-bold px-3 py-0.5 rounded-full"
+                  style={{ background: tier.color + "33", color: tier.color }}
+                >
+                  {LEVEL_TREE[level]} {level} (Lv.{analysis?.level_score ?? 0})
+                </div>
+                {analysis?.badges.map((badge) => {
+                  const b = ALL_BADGES.find((a) => a.name === badge);
+                  return b ? (
+                    <span
+                      key={badge}
+                      className="text-xs font-bold bg-white/70 px-2 py-0.5 rounded-full text-gray-700 flex items-center gap-0.5"
+                    >
+                      <span>{b.emoji}</span>
+                      <span>{badge}</span>
+                    </span>
+                  ) : null;
+                })}
               </div>
             </div>
             <div className="text-right">
@@ -243,8 +257,8 @@ export default function ChildDashboard({ params }: { params: { childId: string }
             <div
               className="absolute left-1/2 -translate-x-1/2 select-none transition-all duration-700"
               style={{
-                bottom: 0,
-                fontSize: `${Math.min(200 + (analysis?.level_score ?? 0) * 10, 260)}px`,
+                bottom: -10,
+                fontSize: `${Math.min(260 + (analysis?.level_score ?? 0) * 10, 320)}px`,
                 lineHeight: 1,
               }}
             >
