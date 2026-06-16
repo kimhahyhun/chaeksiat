@@ -24,7 +24,7 @@ SUBJECT_BADGES = {
     "예술가": "예술",
     "역사학자": "역사·지리",
 }
-BADGE_BOOKS_PER_LEVEL = 3
+BADGE_BOOKS_PER_LEVEL = 5
 
 
 def compute_analysis(records: list) -> dict:
