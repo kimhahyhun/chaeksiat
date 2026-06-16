@@ -45,6 +45,13 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
   const [editNoteText, setEditNoteText] = useState("");
   const [savingNote, setSavingNote] = useState(false);
 
+  // 독서 캘린더
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() }; // month: 0-indexed
+  });
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
   const [loadError, setLoadError] = useState("");
 
   function loadAll() {
@@ -203,6 +210,38 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
     }
     return months;
   })();
+
+  // 날짜별 읽은 책 매핑 (read_at -> records[])
+  const recordsByDate = (() => {
+    const map: Record<string, typeof records> = {};
+    for (const r of records) {
+      const key = r.read_at.slice(0, 10);
+      if (!map[key]) map[key] = [];
+      map[key].push(r);
+    }
+    return map;
+  })();
+
+  const calendarDays = (() => {
+    const { year, month } = calendarMonth;
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const days: { date: string | null; count: number }[] = [];
+    for (let i = 0; i < firstDay; i++) days.push({ date: null, count: 0 });
+    for (let d = 1; d <= daysInMonth; d++) {
+      const key = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      days.push({ date: key, count: recordsByDate[key]?.length ?? 0 });
+    }
+    return days;
+  })();
+
+  function changeCalendarMonth(delta: number) {
+    setCalendarMonth((prev) => {
+      const d = new Date(prev.year, prev.month + delta, 1);
+      return { year: d.getFullYear(), month: d.getMonth() };
+    });
+    setSelectedDate(null);
+  }
 
   // 편독 경고: 최다 분야가 전체의 60% 이상이면 경고
   const imbalanceWarning = (() => {
@@ -479,6 +518,45 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
                 </div>
               )}
 
+              {/* 독서 캘린더 */}
+              <div className="bg-white rounded-2xl p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <button onClick={() => changeCalendarMonth(-1)} className="text-gray-400 hover:text-gray-600 px-2">◀</button>
+                  <h3 className="font-bold text-gray-700">
+                    {calendarMonth.year}년 {calendarMonth.month + 1}월
+                  </h3>
+                  <button onClick={() => changeCalendarMonth(1)} className="text-gray-400 hover:text-gray-600 px-2">▶</button>
+                </div>
+                <div className="grid grid-cols-7 gap-1 text-center">
+                  {["일", "월", "화", "수", "목", "금", "토"].map((d) => (
+                    <div key={d} className="text-xs text-gray-400 font-semibold pb-1">{d}</div>
+                  ))}
+                  {calendarDays.map((day, i) => {
+                    if (!day.date) return <div key={i} />;
+                    const dayNum = Number(day.date.slice(8, 10));
+                    const intensity =
+                      day.count === 0 ? "" :
+                      day.count === 1 ? "bg-seed-200 text-seed-800" :
+                      "bg-seed-500 text-white";
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => day.count > 0 && setSelectedDate(day.date)}
+                        className={`aspect-square rounded-lg text-xs font-bold flex items-center justify-center ${
+                          intensity || "text-gray-400 hover:bg-gray-50"
+                        }`}
+                      >
+                        {dayNum}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center gap-3 mt-3 text-xs text-gray-400">
+                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-seed-200 inline-block" />1권</span>
+                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-seed-500 inline-block" />2권 이상</span>
+                </div>
+              </div>
+
               {/* 월별 독서량 추이 */}
               <div className="bg-white rounded-2xl p-4 shadow-sm">
                 <h3 className="font-bold text-gray-700 mb-3">월별 독서량 추이 (최근 6개월)</h3>
@@ -607,6 +685,40 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
           )}
         </div>
       </div>
+
+      {/* 날짜별 읽은 책 팝업 */}
+      {selectedDate && (
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
+          onClick={() => setSelectedDate(null)}
+        >
+          <div
+            className="bg-white rounded-3xl p-5 w-full max-w-sm shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-black text-gray-800">{formatDate(selectedDate)}</h3>
+              <button onClick={() => setSelectedDate(null)} className="text-gray-400 text-xl">×</button>
+            </div>
+            <div className="space-y-3">
+              {(recordsByDate[selectedDate] ?? []).map((r) => (
+                <div key={r.id} className="flex gap-3 items-start">
+                  {r.book.cover_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={r.book.cover_url} alt={r.book.title} className="w-12 h-16 object-cover rounded-lg shadow flex-shrink-0" />
+                  ) : (
+                    <div className="w-12 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-xl flex-shrink-0">📖</div>
+                  )}
+                  <div>
+                    <p className="font-bold text-sm text-gray-800 line-clamp-2">{r.book.title}</p>
+                    {r.rating && <p className="text-xs text-yellow-500">{"⭐".repeat(Math.round(r.rating))}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 목표 설정 모달 */}
       {showGoalForm && (
