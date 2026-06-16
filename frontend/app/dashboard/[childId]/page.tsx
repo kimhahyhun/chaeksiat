@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { childrenApi, booksApi, analysisApi, goalsApi } from "@/lib/api";
+
+const BarcodeScanner = dynamic(() => import("@/components/BarcodeScanner"), { ssr: false });
 import type { Child, ReadingRecord, ReadingAnalysis, RecommendedBook, ReadingGoal } from "@/lib/api";
 import { AVATARS, KDC_COLORS, LEVEL_TREE, getAge, formatDate } from "@/lib/utils";
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
@@ -30,6 +33,7 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
 
   // 책 추가 폼
   const [showAddBook, setShowAddBook] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const [isbnInput, setIsbnInput] = useState("");
   const [ratingInput, setRatingInput] = useState(5);
   const [noteInput, setNoteInput] = useState("");
@@ -671,6 +675,16 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
       )}
 
       {/* 책 추가 모달 */}
+      {showScanner && (
+        <BarcodeScanner
+          onDetected={(isbn) => {
+            setIsbnInput(isbn);
+            setShowScanner(false);
+          }}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
+
       {showAddBook && (
         <div className="fixed inset-0 bg-black/40 flex items-end justify-center z-50">
           <div className="bg-white rounded-t-3xl p-6 w-full max-w-lg shadow-xl">
@@ -680,16 +694,26 @@ export default function Dashboard({ params }: { params: { childId: string } }) {
                 <label className="block text-sm font-semibold text-gray-600 mb-1">
                   ISBN-13 (책 뒷면 바코드 번호)
                 </label>
-                <input
-                  required
-                  pattern="[0-9]{13}"
-                  className="w-full border-2 border-gray-200 rounded-xl px-4 py-2 focus:outline-none focus:border-seed-400 text-lg tracking-widest"
-                  value={isbnInput}
-                  onChange={(e) => setIsbnInput(e.target.value)}
-                  placeholder="9788934972464"
-                  inputMode="numeric"
-                />
-                <p className="text-xs text-gray-400 mt-1">13자리 숫자를 입력하세요</p>
+                <div className="flex gap-2">
+                  <input
+                    required
+                    pattern="[0-9]{13}"
+                    className="flex-1 border-2 border-gray-200 rounded-xl px-4 py-2 focus:outline-none focus:border-seed-400 text-lg tracking-widest"
+                    value={isbnInput}
+                    onChange={(e) => setIsbnInput(e.target.value)}
+                    placeholder="9788934972464"
+                    inputMode="numeric"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowScanner(true)}
+                    className="flex-shrink-0 bg-seed-100 hover:bg-seed-200 text-seed-700 rounded-xl px-4 text-2xl"
+                    title="바코드 스캔"
+                  >
+                    📷
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">13자리 숫자를 입력하거나 📷로 스캔하세요</p>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-600 mb-2">
