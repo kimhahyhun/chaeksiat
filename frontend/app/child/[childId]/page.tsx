@@ -295,7 +295,6 @@ export default function ChildDashboard({ params }: { params: { childId: string }
                   style={{ background: tier.color + "33", color: tier.color }}
                 >
                   {LEVEL_TREE[level]} {level} (Lv.{analysis?.level_score ?? 0})
-                  <span className="text-xs opacity-60">ⓘ</span>
                 </button>
                 {analysis?.badges.map((badge) => {
                   const b = ALL_BADGES.find((a) => a.name === badge.name);
