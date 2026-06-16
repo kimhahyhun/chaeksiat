@@ -136,6 +136,7 @@ export default function ChildDashboard({ params }: { params: { childId: string }
   const [loading, setLoading] = useState(true);
 
   const [showBookshelf, setShowBookshelf] = useState(false);
+  const [showCompletedMissions, setShowCompletedMissions] = useState(false);
 
   // 책 추가 폼
   const [showAddBook, setShowAddBook] = useState(false);
@@ -515,18 +516,38 @@ export default function ChildDashboard({ params }: { params: { childId: string }
             done: m.check(total, dist, streak),
           }));
           const firstLocked = results.find((m) => !m.done);
+          const completedCount = results.filter((m) => m.done).length;
+          const visibleResults = showCompletedMissions
+            ? results
+            : results.filter((m) => !m.done);
 
           return (
             <div className="bg-white rounded-3xl shadow-lg p-5 overflow-hidden">
-              <h3 className="text-lg font-black text-gray-800 mb-1">🌴 독서 정글 탐험</h3>
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-lg font-black text-gray-800">🌴 독서 정글 탐험</h3>
+                {completedCount > 0 && (
+                  <button
+                    onClick={() => setShowCompletedMissions((v) => !v)}
+                    className="text-xs font-bold text-gray-400 hover:text-gray-600 flex items-center gap-1"
+                  >
+                    {showCompletedMissions ? "완료 숨기기" : `완료 ${completedCount}개 더보기`}
+                    <span className={`transition-transform ${showCompletedMissions ? "rotate-180" : ""}`}>⌄</span>
+                  </button>
+                )}
+              </div>
               <p className="text-sm text-gray-400 mb-5">미션을 달성하면 뱃지가 열려요!</p>
 
+              {visibleResults.length === 0 ? (
+                <div className="text-center py-8 text-amber-500 font-bold">
+                  🎉 모든 미션을 달성했어요!
+                </div>
+              ) : (
               <div className="relative">
                 {/* 연결 경로선 */}
                 <div className="absolute left-7 top-4 bottom-4 w-0.5 bg-gradient-to-b from-green-300 via-yellow-300 to-gray-200 z-0" />
 
                 <div className="space-y-3 relative z-10">
-                  {results.map((mission, idx) => {
+                  {visibleResults.map((mission, idx) => {
                     const isNext = !mission.done && firstLocked?.id === mission.id;
                     return (
                       <div key={mission.id} className="flex items-center gap-4">
@@ -568,6 +589,7 @@ export default function ChildDashboard({ params }: { params: { childId: string }
                   })}
                 </div>
               </div>
+              )}
 
               {/* 전체 진행률 */}
               <div className="mt-5 pt-4 border-t border-gray-100">
