@@ -167,7 +167,6 @@ export default function ChildDashboard({ params }: { params: { childId: string }
 
   const totalBooks = analysis?.total_books ?? 0;
   const level = analysis?.reading_level ?? "씨앗";
-  const points = totalBooks * 10;
   const tier = TIER_INFO[level] ?? TIER_INFO["씨앗"];
 
   const childAge = new Date().getFullYear() - child.birth_year;
@@ -224,8 +223,8 @@ export default function ChildDashboard({ params }: { params: { childId: string }
               </div>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-black text-amber-500">{points}P</div>
-              <div className="text-xs text-gray-500">총 {totalBooks}권</div>
+              <div className="text-2xl font-black text-seed-600">{totalBooks}권</div>
+              <div className="text-xs text-gray-500">읽은 책</div>
             </div>
           </div>
         </div>
@@ -308,7 +307,7 @@ export default function ChildDashboard({ params }: { params: { childId: string }
             </div>
             <div className="flex justify-between text-xs text-gray-400">
               <span>총 {totalBooks}권 읽음</span>
-              <span>{points}P 획득</span>
+              <span>{level} 단계</span>
             </div>
           </div>
         </div>
