@@ -301,8 +301,8 @@ export default function ChildDashboard({ params }: { params: { childId: string }
                       key={badge.name}
                       className="text-xs font-bold bg-white/70 px-2 py-0.5 rounded-full text-gray-700 flex items-center gap-0.5"
                     >
-                      <span>{b.emoji}</span>
-                      <span>{badge.name}{badge.level > 1 ? ` Lv.${badge.level}` : ""}</span>
+                      <span>{b.emoji.repeat(badge.level)}</span>
+                      <span>{badge.name}</span>
                     </span>
                   ) : null;
                 })}
@@ -718,19 +718,25 @@ export default function ChildDashboard({ params }: { params: { childId: string }
               const earnedInfo = analysis?.badges.find((b) => b.name === badge.name);
               const earned = !!earnedInfo;
               return (
-                <div key={badge.name} className="text-center relative">
+                <div key={badge.name} className="text-center">
                   <div
-                    className={`w-14 h-14 mx-auto rounded-2xl flex items-center justify-center text-2xl mb-1 relative ${
+                    className={`min-h-14 rounded-2xl flex items-center justify-center flex-wrap gap-0.5 px-1 py-1.5 mb-1 ${
                       earned
                         ? "bg-amber-50 border-2 border-amber-300 shadow"
                         : "bg-gray-100 grayscale opacity-40"
                     }`}
                   >
-                    {badge.emoji}
-                    {earned && earnedInfo.level > 1 && (
-                      <span className="absolute -top-1.5 -right-1.5 bg-amber-400 text-white text-xs font-black rounded-full w-5 h-5 flex items-center justify-center">
-                        {earnedInfo.level}
-                      </span>
+                    {earned ? (
+                      <>
+                        {Array.from({ length: Math.min(earnedInfo.level, 5) }).map((_, i) => (
+                          <span key={i} className="text-xl">{badge.emoji}</span>
+                        ))}
+                        {earnedInfo.level > 5 && (
+                          <span className="text-xs font-black text-amber-600">+{earnedInfo.level - 5}</span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-2xl">{badge.emoji}</span>
                     )}
                   </div>
                   <div className={`text-xs font-bold ${earned ? "text-amber-600" : "text-gray-400"}`}>
