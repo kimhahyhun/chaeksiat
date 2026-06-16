@@ -54,13 +54,18 @@ class ReadingRecordResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class BadgeInfo(BaseModel):
+    name: str
+    level: int
+
+
 class ReadingAnalysis(BaseModel):
     total_books: int
     category_distribution: dict[str, int]
     favorite_category: str | None
     reading_level: str
     level_score: int
-    badges: list[str]
+    badges: list[BadgeInfo]
 
 
 class LibrarianBookResponse(BaseModel):

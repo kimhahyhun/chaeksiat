@@ -47,12 +47,12 @@ function getFieldLevel(count: number) {
 
 // 전체 배지 목록
 const ALL_BADGES = [
-  { name: "문학왕",    emoji: "📚", desc: "문학 5권 이상" },
-  { name: "과학탐험가", emoji: "🔬", desc: "자연과학 3권 이상" },
-  { name: "사회박사",  emoji: "🌍", desc: "사회과학 3권 이상" },
-  { name: "예술가",    emoji: "🎨", desc: "예술 3권 이상" },
-  { name: "역사학자",  emoji: "🏛️", desc: "역사·지리 3권 이상" },
-  { name: "만독왕",    emoji: "👑", desc: "총 20권 이상" },
+  { name: "문학왕",    emoji: "📚", desc: "문학 3권마다 1단계" },
+  { name: "과학탐험가", emoji: "🔬", desc: "자연과학 3권마다 1단계" },
+  { name: "사회박사",  emoji: "🌍", desc: "사회과학 3권마다 1단계" },
+  { name: "예술가",    emoji: "🎨", desc: "예술 3권마다 1단계" },
+  { name: "역사학자",  emoji: "🏛️", desc: "역사·지리 3권마다 1단계" },
+  { name: "다독왕",    emoji: "👑", desc: "총 20권마다 1단계" },
   { name: "균형독서가", emoji: "⚖️", desc: "5개 분야 이상 2권씩" },
 ];
 
@@ -295,14 +295,14 @@ export default function ChildDashboard({ params }: { params: { childId: string }
                   {LEVEL_TREE[level]} {level} (Lv.{analysis?.level_score ?? 0})
                 </div>
                 {analysis?.badges.map((badge) => {
-                  const b = ALL_BADGES.find((a) => a.name === badge);
+                  const b = ALL_BADGES.find((a) => a.name === badge.name);
                   return b ? (
                     <span
-                      key={badge}
+                      key={badge.name}
                       className="text-xs font-bold bg-white/70 px-2 py-0.5 rounded-full text-gray-700 flex items-center gap-0.5"
                     >
                       <span>{b.emoji}</span>
-                      <span>{badge}</span>
+                      <span>{badge.name}{badge.level > 1 ? ` Lv.${badge.level}` : ""}</span>
                     </span>
                   ) : null;
                 })}
@@ -715,17 +715,23 @@ export default function ChildDashboard({ params }: { params: { childId: string }
           <p className="text-sm text-gray-400 mb-4">조건을 달성하면 배지를 획득해요!</p>
           <div className="grid grid-cols-4 gap-3">
             {ALL_BADGES.map((badge) => {
-              const earned = analysis?.badges.includes(badge.name) ?? false;
+              const earnedInfo = analysis?.badges.find((b) => b.name === badge.name);
+              const earned = !!earnedInfo;
               return (
-                <div key={badge.name} className="text-center">
+                <div key={badge.name} className="text-center relative">
                   <div
-                    className={`w-14 h-14 mx-auto rounded-2xl flex items-center justify-center text-2xl mb-1 ${
+                    className={`w-14 h-14 mx-auto rounded-2xl flex items-center justify-center text-2xl mb-1 relative ${
                       earned
                         ? "bg-amber-50 border-2 border-amber-300 shadow"
                         : "bg-gray-100 grayscale opacity-40"
                     }`}
                   >
                     {badge.emoji}
+                    {earned && earnedInfo.level > 1 && (
+                      <span className="absolute -top-1.5 -right-1.5 bg-amber-400 text-white text-xs font-black rounded-full w-5 h-5 flex items-center justify-center">
+                        {earnedInfo.level}
+                      </span>
+                    )}
                   </div>
                   <div className={`text-xs font-bold ${earned ? "text-amber-600" : "text-gray-400"}`}>
                     {badge.name}

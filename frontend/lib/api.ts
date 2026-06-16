@@ -43,13 +43,18 @@ export interface ReadingRecord {
   book: Book;
 }
 
+export interface BadgeInfo {
+  name: string;
+  level: number;
+}
+
 export interface ReadingAnalysis {
   total_books: number;
   category_distribution: Record<string, number>;
   favorite_category: string | null;
   reading_level: string;
   level_score: number;
-  badges: string[];
+  badges: BadgeInfo[];
 }
 
 export interface RecommendedBook {
