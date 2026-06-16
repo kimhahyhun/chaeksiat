@@ -108,6 +108,24 @@ export interface LibrarianBook {
   cover_url: string | null;
 }
 
+export interface ReadingGoal {
+  id: number;
+  period: "weekly" | "monthly";
+  target_count: number;
+  current_count: number;
+  period_start: string;
+  period_end: string;
+}
+
+export const goalsApi = {
+  get: (childId: number) => req<ReadingGoal | null>(`/children/${childId}/goal`),
+  set: (childId: number, data: { period: "weekly" | "monthly"; target_count: number }) =>
+    req<ReadingGoal>(`/children/${childId}/goal`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+};
+
 export const analysisApi = {
   analyze: (childId: number) => req<ReadingAnalysis>(`/children/${childId}/analysis`),
   recommend: (childId: number) =>
