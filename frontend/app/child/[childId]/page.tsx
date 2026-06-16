@@ -184,6 +184,7 @@ export default function ChildDashboard({ params }: { params: { childId: string }
   const [loading, setLoading] = useState(true);
 
   const [showBookshelf, setShowBookshelf] = useState(false);
+  const [showLevelInfo, setShowLevelInfo] = useState(false);
   const [showCompletedMissions, setShowCompletedMissions] = useState(false);
 
   // 책 추가 폼
@@ -288,12 +289,14 @@ export default function ChildDashboard({ params }: { params: { childId: string }
             <div className="flex-1">
               <h2 className="text-2xl font-black text-gray-800">{child.name}</h2>
               <div className="flex items-center gap-1.5 flex-wrap mt-1">
-                <div
-                  className="text-sm font-bold px-3 py-0.5 rounded-full"
+                <button
+                  onClick={() => setShowLevelInfo(true)}
+                  className="text-sm font-bold px-3 py-0.5 rounded-full flex items-center gap-1 hover:brightness-95 transition-all"
                   style={{ background: tier.color + "33", color: tier.color }}
                 >
                   {LEVEL_TREE[level]} {level} (Lv.{analysis?.level_score ?? 0})
-                </div>
+                  <span className="text-xs opacity-60">ⓘ</span>
+                </button>
                 {analysis?.badges.map((badge) => {
                   const b = ALL_BADGES.find((a) => a.name === badge.name);
                   return b ? (
@@ -816,6 +819,54 @@ export default function ChildDashboard({ params }: { params: { childId: string }
         })()}
 
       </div>
+
+      {/* 레벨 단계 안내 모달 */}
+      {showLevelInfo && (
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
+          onClick={() => setShowLevelInfo(false)}
+        >
+          <div
+            className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-xl max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="text-xl font-black text-gray-800">🌳 레벨 단계 안내</h3>
+              <button onClick={() => setShowLevelInfo(false)} className="text-gray-400 text-xl">×</button>
+            </div>
+            <p className="text-sm text-gray-400 mb-4">책을 읽을수록 다음 단계로 성장해요!</p>
+
+            <div className="space-y-2">
+              {Object.entries(LEVEL_TREE).map(([lv, emoji], idx) => {
+                const minBooks = levelThresholds[idx] ?? 0;
+                const maxBooks = levelThresholds[idx + 1];
+                const isCurrent = lv === level;
+                const isDone = totalBooks >= minBooks;
+                return (
+                  <div
+                    key={lv}
+                    className={`flex items-center gap-3 p-2.5 rounded-2xl ${
+                      isCurrent ? "bg-seed-50 border-2 border-seed-300" : isDone ? "bg-gray-50" : "opacity-40"
+                    }`}
+                  >
+                    <span className="text-2xl">{emoji}</span>
+                    <div className="flex-1">
+                      <div className="font-bold text-gray-800 text-sm">
+                        Lv.{idx} {lv}
+                        {isCurrent && <span className="ml-1 text-xs text-seed-600 font-bold">(현재)</span>}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {maxBooks ? `${minBooks}~${maxBooks - 1}권` : `${minBooks}권 이상`}
+                      </div>
+                    </div>
+                    {isDone && <span className="text-seed-500 text-lg">✓</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 책 추가 모달 */}
       {showAddBook && (
