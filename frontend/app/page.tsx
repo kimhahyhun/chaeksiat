@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { childrenApi, type Child } from "@/lib/api";
-import { AVATARS, getAge } from "@/lib/utils";
+import { childrenApi, analysisApi, type Child, type ReadingAnalysis } from "@/lib/api";
+import { AVATARS, LEVEL_TREE, getAge } from "@/lib/utils";
 
 const EMPTY_FORM = { name: "", birth_year: 2018, avatar: "bear" };
 
 export default function Home() {
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
+  const [childStats, setChildStats] = useState<Record<number, ReadingAnalysis>>({});
+  const [loadingStats, setLoadingStats] = useState(false);
   const [editTarget, setEditTarget] = useState<Child | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -17,7 +19,22 @@ export default function Home() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    childrenApi.list().then(setChildren).finally(() => setLoading(false));
+    childrenApi.list().then((kids) => {
+      setChildren(kids);
+      setLoading(false);
+      setLoadingStats(true);
+      Promise.all(
+        kids.map((c) =>
+          analysisApi.analyze(c.id)
+            .then((a) => ({ id: c.id, analysis: a }))
+            .catch(() => null)
+        )
+      ).then((results) => {
+        const map: Record<number, ReadingAnalysis> = {};
+        results.forEach((r) => { if (r) map[r.id] = r.analysis; });
+        setChildStats(map);
+      }).finally(() => setLoadingStats(false));
+    }).finally(() => setLoading(false));
   }, []);
 
   function openEdit(child: Child) {
@@ -96,25 +113,48 @@ export default function Home() {
           <div className="text-center py-16 text-4xl">📚</div>
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-            {children.map((child) => (
-              <div key={child.id} className="relative">
-                <Link
-                  href={`/child/${child.id}`}
-                  className="block bg-white rounded-3xl p-6 shadow-sm hover:shadow-md transition-all hover:scale-105 text-center border-2 border-seed-100"
-                >
-                  <div className="text-5xl mb-3">{AVATARS[child.avatar] ?? "👶"}</div>
-                  <div className="font-bold text-gray-800 text-lg">{child.name}</div>
-                  <div className="text-sm text-gray-500 mt-1">{getAge(child.birth_year)}살</div>
-                </Link>
-                <button
-                  onClick={(e) => { e.preventDefault(); openEdit(child); }}
-                  className="absolute top-2 right-2 w-8 h-8 bg-white rounded-full shadow text-base flex items-center justify-center hover:bg-seed-50 transition-colors"
-                  title="프로필 수정"
-                >
-                  ✏️
-                </button>
-              </div>
-            ))}
+            {children.map((child) => {
+              const stats = childStats[child.id];
+              return (
+                <div key={child.id} className="relative">
+                  <Link
+                    href={`/child/${child.id}`}
+                    className="block bg-white rounded-3xl p-5 shadow-sm hover:shadow-md transition-all hover:scale-105 text-center border-2 border-seed-100"
+                  >
+                    <div className="text-5xl mb-2">{AVATARS[child.avatar] ?? "👶"}</div>
+                    <div className="font-bold text-gray-800 text-lg">{child.name}</div>
+                    <div className="text-xs text-gray-400 mt-0.5 mb-3">{getAge(child.birth_year)}살</div>
+
+                    {/* 현황 */}
+                    {loadingStats ? (
+                      <div className="space-y-1.5">
+                        <div className="h-5 bg-gray-100 rounded-full animate-pulse mx-2" />
+                        <div className="h-5 bg-gray-100 rounded-full animate-pulse mx-4" />
+                      </div>
+                    ) : stats ? (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-center gap-1 bg-green-50 rounded-full py-1 px-2">
+                          <span>{LEVEL_TREE[stats.reading_level] ?? "🌰"}</span>
+                          <span className="text-xs font-bold text-green-700">{stats.reading_level}</span>
+                        </div>
+                        <div className="text-xs font-bold text-seed-600">
+                          📚 {stats.total_books}권 읽음
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-xs text-gray-300">아직 기록 없음</div>
+                    )}
+                  </Link>
+                  <button
+                    onClick={(e) => { e.preventDefault(); openEdit(child); }}
+                    className="absolute top-2 right-2 w-8 h-8 bg-white rounded-full shadow text-base flex items-center justify-center hover:bg-seed-50 transition-colors"
+                    title="프로필 수정"
+                  >
+                    ✏️
+                  </button>
+                </div>
+              );
+            })}
 
             <button
               onClick={openCreate}

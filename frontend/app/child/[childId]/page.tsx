@@ -317,7 +317,10 @@ export default function ChildDashboard({ params }: { params: { childId: string }
       <header className="px-4 pt-4 pb-2 flex items-center justify-between">
         <Link href="/" className="text-2xl">🏠</Link>
         <h1 className="text-lg font-black text-green-700">📚 책씨앗</h1>
-        <Link href={`/parent/${id}`} className="text-xl" title="부모 관리 화면">⚙️</Link>
+        <Link href={`/parent/${id}`} className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 transition-colors rounded-full px-3 py-1.5">
+          <span className="text-base">👨‍👩‍👧</span>
+          <span className="text-xs font-bold text-gray-600">부모 화면</span>
+        </Link>
       </header>
 
       <div className="max-w-lg mx-auto px-4 pb-16 space-y-4">
@@ -368,10 +371,10 @@ export default function ChildDashboard({ params }: { params: { childId: string }
           >
             📖 읽은 책 추가하기
           </button>
-          <Link href={`/child/${id}/career`}>
-            <div className="flex flex-col items-center justify-center bg-indigo-500 text-white font-black rounded-2xl shadow-lg hover:bg-indigo-600 active:scale-95 transition-all px-4 py-2 h-full min-w-[72px]">
-              <span className="text-2xl">🔭</span>
-              <span className="text-xs mt-0.5 whitespace-nowrap">진로 추천</span>
+          <Link href={`/child/${id}/career`} className="flex-1">
+            <div className="flex items-center justify-center gap-2 bg-indigo-500 text-white font-black rounded-2xl shadow-lg hover:bg-indigo-600 active:scale-95 transition-all py-4 w-full">
+              <span className="text-xl">🔭</span>
+              <span className="text-base">진로 추천</span>
             </div>
           </Link>
         </div>
@@ -695,11 +698,8 @@ export default function ChildDashboard({ params }: { params: { childId: string }
                   🎉 모든 미션을 달성했어요!
                 </div>
               ) : (
-              <div className="relative">
-                {/* 연결 경로선 */}
-                <div className="absolute left-7 top-4 bottom-4 w-0.5 bg-gradient-to-b from-green-300 via-yellow-300 to-gray-200 z-0" />
-
-                <div className="space-y-3 relative z-10">
+              <div>
+                <div className="space-y-3">
                   {visibleResults.map((mission, idx) => {
                     const isNext = !mission.done && firstLocked?.id === mission.id;
                     return (
