@@ -115,3 +115,24 @@ class RecommendedBook(BaseModel):
     class_nm: str | None = None
     cover_url: str | None = None
     reason: str
+
+
+class CareerRecommendation(BaseModel):
+    rank: int
+    name: str
+    emoji: str
+    desc: str
+    match_rate: int
+    reason: str
+    recommended_books: list[str]
+    activities: list[str]
+    color: str
+
+
+class CareerAnalysisResponse(BaseModel):
+    child_name: str
+    total_books: int
+    unique_categories: int
+    analysis_pct: int
+    top_categories: list[str]
+    recommendations: list[CareerRecommendation]
