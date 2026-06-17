@@ -360,13 +360,21 @@ export default function ChildDashboard({ params }: { params: { childId: string }
           </div>
         </div>
 
-        {/* 책 추가 버튼 */}
-        <button
-          onClick={() => setShowAddBook(true)}
-          className="block w-full bg-green-500 text-white font-black text-lg py-4 rounded-2xl text-center shadow-lg hover:bg-green-600 active:scale-95 transition-all"
-        >
-          📖 읽은 책 추가하기
-        </button>
+        {/* 책 추가 + 진로 추천 버튼 */}
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowAddBook(true)}
+            className="flex-1 bg-green-500 text-white font-black text-base py-4 rounded-2xl text-center shadow-lg hover:bg-green-600 active:scale-95 transition-all"
+          >
+            📖 읽은 책 추가하기
+          </button>
+          <Link href={`/child/${id}/career`}>
+            <div className="flex flex-col items-center justify-center bg-indigo-500 text-white font-black rounded-2xl shadow-lg hover:bg-indigo-600 active:scale-95 transition-all px-4 py-2 h-full min-w-[72px]">
+              <span className="text-2xl">🔭</span>
+              <span className="text-xs mt-0.5 whitespace-nowrap">진로 추천</span>
+            </div>
+          </Link>
+        </div>
 
         {/* 독서 목표 */}
         {goal && (

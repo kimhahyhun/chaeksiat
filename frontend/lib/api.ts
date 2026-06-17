@@ -141,6 +141,32 @@ export const goalsApi = {
     }),
 };
 
+export interface CareerRecommendation {
+  rank: number;
+  name: string;
+  emoji: string;
+  desc: string;
+  match_rate: number;
+  reason: string;
+  recommended_books: string[];
+  activities: string[];
+  color: string;
+}
+
+export interface CareerAnalysis {
+  child_name: string;
+  total_books: number;
+  unique_categories: number;
+  analysis_pct: number;
+  top_categories: string[];
+  recommendations: CareerRecommendation[];
+}
+
+export const careerApi = {
+  getRecommendations: (childId: number) =>
+    req<CareerAnalysis>(`/children/${childId}/career`),
+};
+
 export const analysisApi = {
   analyze: (childId: number) => req<ReadingAnalysis>(`/children/${childId}/analysis`),
   recommend: (childId: number) =>
